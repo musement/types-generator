@@ -18,16 +18,24 @@ function getReferenceName(reference: string): string {
   return reference.replace("#/components/schemas/", "");
 }
 
+function combineKeyAndProperty(
+  key: string,
+  property: SchemaObject | ReferenceObject,
+  separator: string
+): E.Either<Error, string> {
+  return pipe(
+    getType(property),
+    E.map(type => `${key}${separator}${type}`)
+  );
+}
+
 function getTypeSchemas(separator: string) {
   return function(schemas: {
     [key: string]: SchemaObject | ReferenceObject;
   }): E.Either<Error, string[]> {
     return pipe(
       A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
-        pipe(
-          getType(property),
-          E.map(type => `${key}${separator}${type}`)
-        )
+        combineKeyAndProperty(key, property, separator)
       )
     );
   };
