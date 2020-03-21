@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Swagger } from "./models/Swagger";
 import * as E from "fp-ts/lib/Either";
 import * as A from "fp-ts/lib/Array";
@@ -24,12 +25,8 @@ function getTypeSchemas(separator: string) {
     return pipe(
       A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
         pipe(
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
           getType(property),
-          E.fold(
-            error => E.left(error),
-            type => E.right(`${key}${separator}${type}`)
-          )
+          E.map(type => `${key}${separator}${type}`)
         )
       )
     );
@@ -57,28 +54,19 @@ function getType(
   if ("allOf" in property && property.allOf) {
     return pipe(
       A.array.traverse(E.either)(property.allOf, getType),
-      E.fold(
-        error => E.left(error),
-        types => E.right(types.join(" & "))
-      )
+      E.map(types => types.join(" & "))
     );
   }
   if ("anyOf" in property && property.anyOf) {
     return pipe(
       A.array.traverse(E.either)(property.anyOf, getType),
-      E.fold(
-        error => E.left(error),
-        types => E.right(types.join(" | "))
-      )
+      E.map(types => types.join(" | "))
     );
   }
   if ("oneOf" in property && property.oneOf) {
     return pipe(
       A.array.traverse(E.either)(property.oneOf, getType),
-      E.fold(
-        error => E.left(error),
-        types => E.right(types.join(" | "))
-      )
+      E.map(types => types.join(" | "))
     );
   }
   if (["boolean", "number", "null", "string"].indexOf(property.type) !== -1) {
@@ -91,10 +79,7 @@ function getType(
     return pipe(
       property.properties,
       getTypeSchemas(":"),
-      E.fold(
-        error => E.left(error),
-        properties => E.right(`{${properties.join(",")}}`)
-      )
+      E.map(properties => `{${properties.join(",")}}`)
     );
   }
   return E.left(new Error(`Invalid type: ${JSON.stringify(property)}`));
@@ -105,10 +90,7 @@ function generate(swagger: Swagger): E.Either<Error, string> {
     swagger,
     getDefinitions,
     E.chain(getTypeSchemas("=")),
-    E.fold(
-      error => E.left(error),
-      properties => E.right(properties.map(prop => `type ${prop}`).join(";"))
-    )
+    E.map(properties => properties.map(prop => `type ${prop}`).join(";"))
   );
 }
 
