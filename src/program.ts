@@ -3,32 +3,25 @@ import * as T from "fp-ts/lib/Task";
 import { pipe } from "fp-ts/lib/pipeable";
 import { getContent } from "./dowload";
 import { generate } from "./generate";
-import { write } from "./write"; // string => Task<Either<Error, void>>
+import { write } from "./write";
 
-function flatten(
-  taskEither: T.Task<E.Either<Error, T.Task<E.Either<Error, void>>>>
-): T.Task<E.Either<Error, void>> {
-  return pipe(
-    taskEither,
-    T.map(
-      E.fold(
-        error => T.of(E.left(error)),
-        task => task
-      )
-    ), // Task<Task<E.Either<Error, void>>>
-    T.flatten
+const flatGenerate = T.map(E.chain(generate));
+
+const flatWrite = (destination: string) => (
+  eitherString: T.Task<E.Either<Error, string>>
+): T.Task<E.Either<Error, void>> =>
+  pipe(
+    eitherString,
+    T.chain(eitherString =>
+      E.either.traverse(T.task)(eitherString, write(destination))
+    ),
+    s => s,
+    T.map(E.flatten)
   );
-}
 
 export function program(
   swaggerUrl: string,
   destination: string
 ): T.Task<E.Either<Error, void>> {
-  return pipe(
-    swaggerUrl,
-    getContent, // Task<Either<Error, Swagger>>
-    T.map(E.chain(generate)), // Task<Either<Error, string>>
-    T.map(E.map(write(destination))), // T.Task<E.Either<Error, T.Task<E.Either<Error, void>>>>
-    flatten
-  );
+  return pipe(swaggerUrl, getContent, flatGenerate, flatWrite(destination));
 }
