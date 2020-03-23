@@ -1,12 +1,16 @@
 import { prompt } from "inquirer";
 import { cli } from "../cli";
 import { program } from "../program";
-import { left } from "fp-ts/lib/Either";
+import { Either } from "fp-ts/lib/Either";
 
 jest.mock("../program", () => ({
-  program: jest.fn(() => (): Promise<undefined> => Promise.resolve(undefined))
+  program: jest.fn(() => (): Promise<Either<Error, void>> =>
+    Promise.resolve({ _tag: "Right", right: undefined })
+  )
 }));
 jest.mock("inquirer", () => ({ prompt: jest.fn(() => Promise.resolve({})) }));
+console.error = jest.fn();
+console.log = jest.fn();
 
 describe("cli", () => {
   afterEach(() => {
@@ -16,7 +20,7 @@ describe("cli", () => {
 
   describe("when all options are given", () => {
     test("it returns a task that executes the program", async () => {
-      const result = await cli([
+      await cli([
         "node",
         "generate-types",
         "--url",
@@ -24,7 +28,7 @@ describe("cli", () => {
         "--destination",
         "filename.d.ts"
       ])();
-      expect(result).toEqual(undefined);
+      expect(console.log).toHaveBeenCalledWith("success");
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([]);
       expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts");
@@ -33,9 +37,9 @@ describe("cli", () => {
     describe("when the program returns an error", () => {
       test("it returns a task that returns the error", async () => {
         ((program as unknown) as jest.Mock).mockReturnValue(() =>
-          Promise.resolve(left(new Error("program error")))
+          Promise.resolve({ _tag: "Left", left: new Error("program error") })
         );
-        const result = await cli([
+        await cli([
           "node",
           "generate-types",
           "--url",
@@ -43,7 +47,7 @@ describe("cli", () => {
           "--destination",
           "filename.d.ts"
         ])();
-        expect(result).toEqual(left(new Error("program error")));
+        expect(console.error).toHaveBeenCalledWith(new Error("program error"));
         expect(prompt).toHaveBeenCalledWith([]);
         expect(prompt).toHaveBeenCalledTimes(1);
         expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts");
@@ -85,14 +89,14 @@ describe("cli", () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           url: ""
         });
-        const result = await cli([
+        await cli([
           "node",
           "generate-types",
           "--destination",
           "filename.d.ts"
         ])();
         expect(program).not.toHaveBeenCalled();
-        expect(result).toEqual(left(new Error("Url is missing")));
+        expect(console.error).toHaveBeenCalledWith(new Error("Url is missing"));
       });
     });
   });
@@ -126,14 +130,11 @@ describe("cli", () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           destination: ""
         });
-        const result = await cli([
-          "node",
-          "generate-types",
-          "--url",
-          "swagger_url"
-        ])();
+        await cli(["node", "generate-types", "--url", "swagger_url"])();
         expect(program).not.toHaveBeenCalled();
-        expect(result).toEqual(left(new Error("Destination is missing")));
+        expect(console.error).toHaveBeenCalledWith(
+          new Error("Destination is missing")
+        );
       });
     });
   });

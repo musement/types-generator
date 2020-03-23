@@ -81,7 +81,10 @@ function promptForMissingOptions(options) {
 function executeProgram(options) {
     return program_1.program(options.url, options.destination);
 }
+function output(result) {
+    return pipeable_1.pipe(result, T.map(E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); })));
+}
 function cli(args) {
-    return pipeable_1.pipe(args, parseArgumentsIntoOptions, promptForMissingOptions, T.chain(function (options) { return E.either.traverse(T.task)(options, executeProgram); }), T.map(E.flatten));
+    return pipeable_1.pipe(args, parseArgumentsIntoOptions, promptForMissingOptions, T.chain(function (options) { return E.either.traverse(T.task)(options, executeProgram); }), T.map(E.flatten), output);
 }
 exports.cli = cli;

@@ -86,13 +86,26 @@ function executeProgram(options: Options): T.Task<E.Either<Error, void>> {
   return program(options.url, options.destination);
 }
 
-function cli(args: string[]): T.Task<E.Either<Error, void>> {
+function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {
+  return pipe(
+    result,
+    T.map(
+      E.fold(
+        error => console.error(error),
+        () => console.log("success")
+      )
+    )
+  );
+}
+
+function cli(args: string[]): T.Task<void> {
   return pipe(
     args,
     parseArgumentsIntoOptions,
     promptForMissingOptions,
     T.chain(options => E.either.traverse(T.task)(options, executeProgram)),
-    T.map(E.flatten)
+    T.map(E.flatten),
+    output
   );
 }
 
