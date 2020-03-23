@@ -13,13 +13,17 @@ var pipeable_1 = require("fp-ts/lib/pipeable");
 var dowload_1 = require("./dowload");
 var generate_1 = require("./generate");
 var write_1 = require("./write");
-var flatGenerate = T.map(E.chain(generate_1.generate));
-var flatWrite = function (destination) { return function (eitherString) {
-    return pipeable_1.pipe(eitherString, T.chain(function (eitherString) {
-        return E.either.traverse(T.task)(eitherString, write_1.write(destination));
-    }), function (s) { return s; }, T.map(E.flatten));
-}; };
-function program(swaggerUrl, destination) {
-    return pipeable_1.pipe(swaggerUrl, dowload_1.getContent, flatGenerate, flatWrite(destination));
+function flatGenerate(options) {
+    return T.map(E.chain(generate_1.generate(options)));
+}
+function flatWrite(destination) {
+    return function (eitherString) {
+        return pipeable_1.pipe(eitherString, T.chain(function (eitherString) {
+            return E.either.traverse(T.task)(eitherString, write_1.write(destination));
+        }), T.map(E.flatten));
+    };
+}
+function program(swaggerUrl, destination, exitOnInvalidType) {
+    return pipeable_1.pipe(swaggerUrl, dowload_1.getContent, flatGenerate({ exitOnInvalidType: exitOnInvalidType }), flatWrite(destination));
 }
 exports.program = program;

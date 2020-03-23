@@ -32,15 +32,18 @@ function parseArgumentsIntoOptions(rawArgs) {
         "--destination": String,
         "--url": String,
         "--type": String,
+        "--exitOnInvalidType": Boolean,
         "-d": "--destination",
         "-u": "--url",
-        "-t": "--type"
+        "-t": "--type",
+        "-e": "--exitOnInvalidType"
     }, {
         argv: rawArgs.slice(2)
     });
     return {
         destination: args["--destination"],
-        url: args["--url"]
+        url: args["--url"],
+        exitOnInvalidType: args["--exitOnInvalidType"] || false
     };
 }
 function getQuestions(options) {
@@ -79,7 +82,7 @@ function promptForMissingOptions(options) {
     return pipeable_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
 }
 function executeProgram(options) {
-    return program_1.program(options.url, options.destination);
+    return program_1.program(options.url, options.destination, options.exitOnInvalidType);
 }
 function output(result) {
     return pipeable_1.pipe(result, T.map(E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); })));

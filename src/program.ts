@@ -4,24 +4,38 @@ import { pipe } from "fp-ts/lib/pipeable";
 import { getContent } from "./dowload";
 import { generate } from "./generate";
 import { write } from "./write";
+import { Options } from "./models/Options";
+import { Swagger } from "./models/Swagger";
 
-const flatGenerate = T.map(E.chain(generate));
+function flatGenerate(
+  options: Options
+): (fa: T.Task<E.Either<Error, Swagger>>) => T.Task<E.Either<Error, string>> {
+  return T.map(E.chain(generate(options)));
+}
 
-const flatWrite = (destination: string) => (
-  eitherString: T.Task<E.Either<Error, string>>
-): T.Task<E.Either<Error, void>> =>
-  pipe(
-    eitherString,
-    T.chain(eitherString =>
-      E.either.traverse(T.task)(eitherString, write(destination))
-    ),
-    s => s,
-    T.map(E.flatten)
-  );
+function flatWrite(destination: string) {
+  return function(
+    eitherString: T.Task<E.Either<Error, string>>
+  ): T.Task<E.Either<Error, void>> {
+    return pipe(
+      eitherString,
+      T.chain(eitherString =>
+        E.either.traverse(T.task)(eitherString, write(destination))
+      ),
+      T.map(E.flatten)
+    );
+  };
+}
 
 export function program(
   swaggerUrl: string,
-  destination: string
+  destination: string,
+  exitOnInvalidType: boolean
 ): T.Task<E.Either<Error, void>> {
-  return pipe(swaggerUrl, getContent, flatGenerate, flatWrite(destination));
+  return pipe(
+    swaggerUrl,
+    getContent,
+    flatGenerate({ exitOnInvalidType }),
+    flatWrite(destination)
+  );
 }

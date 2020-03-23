@@ -8,6 +8,7 @@ import { pipe } from "fp-ts/lib/pipeable";
 type Options = {
   destination: string;
   url: string;
+  exitOnInvalidType: boolean;
 };
 
 function parseArgumentsIntoOptions(rawArgs: string[]): Partial<Options> {
@@ -16,9 +17,11 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<Options> {
       "--destination": String,
       "--url": String,
       "--type": String,
+      "--exitOnInvalidType": Boolean,
       "-d": "--destination",
       "-u": "--url",
-      "-t": "--type"
+      "-t": "--type",
+      "-e": "--exitOnInvalidType"
     },
     {
       argv: rawArgs.slice(2)
@@ -26,7 +29,8 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<Options> {
   );
   return {
     destination: args["--destination"],
-    url: args["--url"]
+    url: args["--url"],
+    exitOnInvalidType: args["--exitOnInvalidType"] || false
   };
 }
 
@@ -83,7 +87,7 @@ function promptForMissingOptions(
 }
 
 function executeProgram(options: Options): T.Task<E.Either<Error, void>> {
-  return program(options.url, options.destination);
+  return program(options.url, options.destination, options.exitOnInvalidType);
 }
 
 function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {

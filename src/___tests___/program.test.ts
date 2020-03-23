@@ -20,23 +20,27 @@ describe("program", () => {
         (): T.Task<E.Either<Error, { openapi: string }>> =>
           T.of(E.right({ openapi: "3.0.0" }))
       );
-      ((generate as unknown) as jest.Mock).mockImplementationOnce(
+      const actualGenerate = jest.fn(
         (): E.Either<Error, string> => {
           return E.right("generated types");
         }
       );
-      const writeMock = jest.fn(
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(
         (): T.Task<E.Either<Error, void>> => {
           return T.of(E.right(undefined));
         }
       );
-      ((write as unknown) as jest.Mock).mockImplementationOnce(() => writeMock);
-      const task = program("swagger_url", "filename");
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+
+      const task = program("swagger_url", "filename", true);
       const result = await task();
+
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ openapi: "3.0.0" });
+      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
-      expect(writeMock).toHaveBeenCalledWith("generated types");
+      expect(actualWrite).toHaveBeenCalledWith("generated types");
       expect(result).toEqual(E.right(undefined));
     });
   });
@@ -47,23 +51,22 @@ describe("program", () => {
         (): T.Task<E.Either<Error, {}>> =>
           T.of(E.left(new Error("download error")))
       );
-      ((generate as unknown) as jest.Mock).mockImplementationOnce(
-        (): E.Either<Error, string> => {
-          return E.right("generated types");
-        }
-      );
-      const writeMock = jest.fn(
+      const actualGenerate = jest.fn();
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(
         (): T.Task<E.Either<Error, void>> => {
           return T.of(E.right(undefined));
         }
       );
-      ((write as unknown) as jest.Mock).mockImplementationOnce(() => writeMock);
-      const task = program("swagger_url", "filename");
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+
+      const task = program("swagger_url", "filename", true);
       const result = await task();
+
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).not.toHaveBeenCalled();
+      expect(actualGenerate).not.toHaveBeenCalled();
       expect(write).toHaveBeenCalledWith("filename");
-      expect(writeMock).not.toHaveBeenCalled();
+      expect(actualWrite).not.toHaveBeenCalled();
       expect(result).toEqual(E.left(new Error("download error")));
     });
   });
@@ -74,23 +77,27 @@ describe("program", () => {
         (): T.Task<E.Either<Error, { openapi: string }>> =>
           T.of(E.right({ openapi: "3.0.0" }))
       );
-      ((generate as unknown) as jest.Mock).mockImplementationOnce(
+      const actualGenerate = jest.fn(
         (): E.Either<Error, string> => {
           return E.left(new Error("types error"));
         }
       );
-      const writeMock = jest.fn(
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(
         (): T.Task<E.Either<Error, void>> => {
           return T.of(E.right(undefined));
         }
       );
-      ((write as unknown) as jest.Mock).mockImplementationOnce(() => writeMock);
-      const task = program("swagger_url", "filename");
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+
+      const task = program("swagger_url", "filename", true);
       const result = await task();
+
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ openapi: "3.0.0" });
+      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
-      expect(writeMock).not.toHaveBeenCalled();
+      expect(actualWrite).not.toHaveBeenCalled();
       expect(result).toEqual(E.left(new Error("types error")));
     });
   });
@@ -101,23 +108,27 @@ describe("program", () => {
         (): T.Task<E.Either<Error, { openapi: string }>> =>
           T.of(E.right({ openapi: "3.0.0" }))
       );
-      ((generate as unknown) as jest.Mock).mockImplementationOnce(
+      const actualGenerate = jest.fn(
         (): E.Either<Error, string> => {
           return E.right("generated types");
         }
       );
-      const writeMock = jest.fn(
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(
         (): T.Task<E.Either<Error, void>> => {
           return T.of(E.left(new Error("write error")));
         }
       );
-      ((write as unknown) as jest.Mock).mockImplementationOnce(() => writeMock);
-      const task = program("swagger_url", "filename");
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+
+      const task = program("swagger_url", "filename", true);
       const result = await task();
+
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ openapi: "3.0.0" });
+      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
-      expect(writeMock).toHaveBeenCalledWith("generated types");
+      expect(actualWrite).toHaveBeenCalledWith("generated types");
       expect(result).toEqual(E.left(new Error("write error")));
     });
   });
