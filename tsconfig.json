@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
         "strict": true,
-        "outDir": "./dist",
+        "outDir": "./bin",
         "allowJs": true,
         "target": "es5",
         "esModuleInterop": true
     },
     "include": [
-        "./src/**/*"
+        "./src/index.ts"
     ]
 }
