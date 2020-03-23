@@ -142,6 +142,16 @@ describe("getType", () => {
         })
       ).toEqual(right("ExtraCustomerDataField"));
     });
+
+    describe("when the reference name contains '-'", () => {
+      test("it converts the name to PascalCase", () => {
+        expect(
+          getType({ exitOnInvalidType: true })({
+            $ref: "#/components/schemas/extra-customer-data-field"
+          })
+        ).toEqual(right("ExtraCustomerDataField"));
+      });
+    });
   });
 
   describe("array", () => {
@@ -383,6 +393,30 @@ describe("generate", () => {
           "type ExceptionResponse={code:string,message:string,data:string};type FormFieldValue={name:string,value:string}"
         )
       );
+    });
+  });
+
+  describe("when a type name contains '-'", () => {
+    test("it converts the name to PascalCase", () => {
+      expect(
+        generate({ exitOnInvalidType: true })({
+          openapi: "3.0.0",
+          components: {
+            schemas: {
+              "exception-response": {
+                properties: {
+                  code: {
+                    description: "Error code",
+                    type: "string",
+                    example: "1401"
+                  }
+                },
+                type: "object"
+              }
+            }
+          }
+        })
+      ).toEqual(right("type ExceptionResponse={code:string}"));
     });
   });
 

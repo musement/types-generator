@@ -18,8 +18,15 @@ function getDefinitions(
     : E.left(new Error("There is no definition"));
 }
 
+function sanitizeKey(key: string): string {
+  return key
+    .split("-")
+    .map(token => token[0].toUpperCase() + token.slice(1))
+    .join("");
+}
+
 function getReferenceName(reference: string): string {
-  return reference.replace("#/components/schemas/", "");
+  return pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
 }
 
 function combineKeyAndProperty(
@@ -34,13 +41,14 @@ function combineKeyAndProperty(
   );
 }
 
-function getTypeSchemas(separator: string, options: Options) {
-  return function(schemas: {
+function getTypesFromProperties(options: Options) {
+  return function(properties: {
     [key: string]: SchemaObject | ReferenceObject;
   }): E.Either<Error, string[]> {
     return pipe(
-      A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
-        combineKeyAndProperty(key, property, separator, options)
+      A.array.traverse(E.either)(
+        Object.entries(properties),
+        ([key, property]) => combineKeyAndProperty(key, property, ":", options)
       )
     );
   };
@@ -92,7 +100,7 @@ function getType(options: Options) {
     if (property.type === "object" && property.properties) {
       return pipe(
         property.properties,
-        getTypeSchemas(":", options),
+        getTypesFromProperties(options),
         E.map(properties => `{${properties.join(",")}}`)
       );
     }
@@ -102,12 +110,24 @@ function getType(options: Options) {
   };
 }
 
+function getTypesFromSchemas(options: Options) {
+  return function(schemas: {
+    [key: string]: SchemaObject | ReferenceObject;
+  }): E.Either<Error, string[]> {
+    return pipe(
+      A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
+        combineKeyAndProperty(sanitizeKey(key), property, "=", options)
+      )
+    );
+  };
+}
+
 function generate(options: Options) {
   return function(swagger: Swagger): E.Either<Error, string> {
     return pipe(
       swagger,
       getDefinitions,
-      E.chain(getTypeSchemas("=", options)),
+      E.chain(getTypesFromSchemas(options)),
       E.map(properties => properties.map(prop => `type ${prop}`).join(";"))
     );
   };

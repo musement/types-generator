@@ -16,17 +16,23 @@ function getDefinitions(swagger) {
         : E.left(new Error("There is no definition"));
 }
 exports.getDefinitions = getDefinitions;
+function sanitizeKey(key) {
+    return key
+        .split("-")
+        .map(function (token) { return token[0].toUpperCase() + token.slice(1); })
+        .join("");
+}
 function getReferenceName(reference) {
-    return reference.replace("#/components/schemas/", "");
+    return pipeable_1.pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
 }
 function combineKeyAndProperty(key, property, separator, options) {
     return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return "" + key + separator + type; }));
 }
-function getTypeSchemas(separator, options) {
-    return function (schemas) {
-        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(schemas), function (_a) {
+function getTypesFromProperties(options) {
+    return function (properties) {
+        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(properties), function (_a) {
             var key = _a[0], property = _a[1];
-            return combineKeyAndProperty(key, property, separator, options);
+            return combineKeyAndProperty(key, property, ":", options);
         }));
     };
 }
@@ -57,7 +63,7 @@ function getType(options) {
             return E.right("number");
         }
         if (property.type === "object" && property.properties) {
-            return pipeable_1.pipe(property.properties, getTypeSchemas(":", options), E.map(function (properties) { return "{" + properties.join(",") + "}"; }));
+            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(function (properties) { return "{" + properties.join(",") + "}"; }));
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
@@ -65,9 +71,17 @@ function getType(options) {
     };
 }
 exports.getType = getType;
+function getTypesFromSchemas(options) {
+    return function (schemas) {
+        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(schemas), function (_a) {
+            var key = _a[0], property = _a[1];
+            return combineKeyAndProperty(sanitizeKey(key), property, "=", options);
+        }));
+    };
+}
 function generate(options) {
     return function (swagger) {
-        return pipeable_1.pipe(swagger, getDefinitions, E.chain(getTypeSchemas("=", options)), E.map(function (properties) { return properties.map(function (prop) { return "type " + prop; }).join(";"); }));
+        return pipeable_1.pipe(swagger, getDefinitions, E.chain(getTypesFromSchemas(options)), E.map(function (properties) { return properties.map(function (prop) { return "type " + prop; }).join(";"); }));
     };
 }
 exports.generate = generate;
