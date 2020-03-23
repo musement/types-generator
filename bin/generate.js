@@ -55,7 +55,7 @@ function getType(property) {
     if (property.type === "integer") {
         return E.right("number");
     }
-    if (property.type === "object") {
+    if (property.type === "object" && property.properties) {
         return pipeable_1.pipe(property.properties, getTypeSchemas(":"), E.map(function (properties) { return "{" + properties.join(",") + "}"; }));
     }
     return E.left(new Error("Invalid type: " + JSON.stringify(property)));

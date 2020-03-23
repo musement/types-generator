@@ -283,6 +283,14 @@ describe("getType", () => {
       ).toEqual(right("{names:string,data:{age:number,address:string}}"));
     });
 
+    describe("when it doesn't contain 'properties'", () => {
+      test("it returns an error", () => {
+        expect(getType({ type: "object" })).toEqual(
+          left(new Error('Invalid type: {"type":"object"}'))
+        );
+      });
+    });
+
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(

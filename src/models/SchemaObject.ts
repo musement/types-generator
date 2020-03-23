@@ -45,7 +45,7 @@ export type SchemaObject = {
     }
   | {
       type: "object";
-      properties: {
+      properties?: {
         [key: string]: SchemaObject | ReferenceObject;
       };
     }

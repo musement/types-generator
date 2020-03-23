@@ -83,7 +83,7 @@ function getType(
   if (property.type === "integer") {
     return E.right("number");
   }
-  if (property.type === "object") {
+  if (property.type === "object" && property.properties) {
     return pipe(
       property.properties,
       getTypeSchemas(":"),
