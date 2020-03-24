@@ -27,16 +27,17 @@ describe("cli", () => {
         "swagger_url",
         "--destination",
         "filename.d.ts",
-        "--exitOnInvalidType"
+        "--exitOnInvalidType",
+        "--type",
+        "TypeScript"
       ])();
       expect(console.log).toHaveBeenCalledWith("success");
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith(
-        "swagger_url",
-        "filename.d.ts",
-        true
-      );
+      expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
+        exitOnInvalidType: true,
+        type: "TypeScript"
+      });
     });
 
     describe("when the program returns an error", () => {
@@ -50,7 +51,9 @@ describe("cli", () => {
           "--url",
           "swagger_url",
           "--destination",
-          "filename.d.ts"
+          "filename.d.ts",
+          "--type",
+          "TypeScript"
         ])();
         expect(console.error).toHaveBeenCalledWith(new Error("program error"));
       });
@@ -64,7 +67,9 @@ describe("cli", () => {
         "generate-types",
         "--destination",
         "filename.d.ts",
-        "--exitOnInvalidType"
+        "--exitOnInvalidType",
+        "--type",
+        "TypeScript"
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([
@@ -87,13 +92,14 @@ describe("cli", () => {
           "generate-types",
           "--destination",
           "filename.d.ts",
-          "--exitOnInvalidType"
+          "--exitOnInvalidType",
+          "--type",
+          "Flow"
         ])();
-        expect(program).toHaveBeenCalledWith(
-          "swagger_url",
-          "filename.d.ts",
-          true
-        );
+        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
+          exitOnInvalidType: true,
+          type: "Flow"
+        });
       });
     });
 
@@ -122,7 +128,9 @@ describe("cli", () => {
         "generate-types",
         "--url",
         "swagger_url",
-        "--exitOnInvalidType"
+        "--exitOnInvalidType",
+        "--type",
+        "TypeScript"
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([
@@ -145,13 +153,14 @@ describe("cli", () => {
           "generate-types",
           "--url",
           "swagger_url",
-          "--exitOnInvalidType"
+          "--exitOnInvalidType",
+          "--type",
+          "TypeScript"
         ])();
-        expect(program).toHaveBeenCalledWith(
-          "swagger_url",
-          "filename.d.ts",
-          true
-        );
+        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
+          exitOnInvalidType: true,
+          type: "TypeScript"
+        });
       });
     });
 
@@ -175,6 +184,72 @@ describe("cli", () => {
     });
   });
 
+  describe("when type is missing", () => {
+    test("it prompts for the type", async () => {
+      await cli([
+        "node",
+        "generate-types",
+        "--url",
+        "swagger_url",
+        "--exitOnInvalidType",
+        "--destination",
+        "core.3.4.0.d.ts"
+      ])();
+      expect(prompt).toHaveBeenCalledTimes(1);
+      expect(prompt).toHaveBeenCalledWith([
+        {
+          type: "list",
+          name: "type",
+          message: "Types to generate",
+          choices: ["TypeScript", "Flow"],
+          default: "TypeScript"
+        }
+      ]);
+    });
+
+    describe("when user types a valid type", () => {
+      test("it returns a task that executes the program", async () => {
+        ((prompt as unknown) as jest.Mock).mockResolvedValue({
+          type: "TypeScript"
+        });
+        await cli([
+          "node",
+          "generate-types",
+          "--url",
+          "swagger_url",
+          "--destination",
+          "filename.d.ts",
+          "--exitOnInvalidType"
+        ])();
+        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
+          exitOnInvalidType: true,
+          type: "TypeScript"
+        });
+      });
+    });
+
+    describe("when user types an empty type", () => {
+      test("it returns a task that returns an error", async () => {
+        ((prompt as unknown) as jest.Mock).mockResolvedValue({
+          type: ""
+        });
+        await cli([
+          "node",
+          "generate-types",
+          "--url",
+          "swagger_url",
+          "--destination",
+          "core.3.4.0.d.ts",
+          "--exitOnInvalidType"
+        ])();
+        expect(program).not.toHaveBeenCalled();
+        expect(console.error).toHaveBeenCalledWith(
+          new Error("Type is missing")
+        );
+      });
+    });
+  });
+
   describe("when --exitOnInvalidType is missing", () => {
     test("it calls 'program' with exitOnInvalidType=false", async () => {
       ((prompt as unknown) as jest.Mock).mockResolvedValue({});
@@ -184,15 +259,16 @@ describe("cli", () => {
         "--url",
         "swagger_url",
         "--destination",
-        "filename.d.ts"
+        "filename.d.ts",
+        "--type",
+        "TypeScript"
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith(
-        "swagger_url",
-        "filename.d.ts",
-        false
-      );
+      expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
+        exitOnInvalidType: false,
+        type: "TypeScript"
+      });
     });
   });
 });

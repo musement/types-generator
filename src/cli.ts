@@ -2,16 +2,11 @@ import arg from "arg";
 import inquirer from "inquirer";
 import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
-import { program } from "./program";
 import { pipe } from "fp-ts/lib/pipeable";
+import { program } from "./program";
+import { CliConfig } from "./models/CliConfig";
 
-type Options = {
-  destination: string;
-  url: string;
-  exitOnInvalidType: boolean;
-};
-
-function parseArgumentsIntoOptions(rawArgs: string[]): Partial<Options> {
+function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   const args = arg(
     {
       "--destination": String,
@@ -30,12 +25,13 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<Options> {
   return {
     destination: args["--destination"],
     url: args["--url"],
-    exitOnInvalidType: args["--exitOnInvalidType"] || false
+    exitOnInvalidType: args["--exitOnInvalidType"] || false,
+    type: args["--type"] as "Flow" | "TypeScript" | undefined
   };
 }
 
 function getQuestions(
-  options: Partial<Options>
+  options: Partial<CliConfig>
 ): (inquirer.ListQuestion | inquirer.Question)[] {
   const questions: (inquirer.ListQuestion | inquirer.Question)[] = [];
   if (!options.url) {
@@ -55,28 +51,42 @@ function getQuestions(
       default: "core.3.4.0.d.ts"
     });
   }
+
+  if (!options.type) {
+    questions.push({
+      type: "list",
+      name: "type",
+      message: "Types to generate",
+      choices: ["TypeScript", "Flow"],
+      default: "TypeScript"
+    });
+  }
+
   return questions;
 }
 
-function checkOptions(answers: Options): E.Either<Error, Options> {
+function checkOptions(answers: CliConfig): E.Either<Error, CliConfig> {
   if (!answers.url) {
     return E.left(new Error("Url is missing"));
   }
   if (!answers.destination) {
     return E.left(new Error("Destination is missing"));
   }
+  if (!answers.type) {
+    return E.left(new Error("Type is missing"));
+  }
   return E.right(answers);
 }
 
 function getAnswers(
   questions: (inquirer.ListQuestion | inquirer.Question)[]
-): T.Task<Options> {
-  return (): Promise<Options> => inquirer.prompt<Options>(questions);
+): T.Task<CliConfig> {
+  return (): Promise<CliConfig> => inquirer.prompt<CliConfig>(questions);
 }
 
 function promptForMissingOptions(
-  options: Partial<Options>
-): T.Task<E.Either<Error, Options>> {
+  options: Partial<CliConfig>
+): T.Task<E.Either<Error, CliConfig>> {
   return pipe(
     options,
     getQuestions,
@@ -86,8 +96,13 @@ function promptForMissingOptions(
   );
 }
 
-function executeProgram(options: Options): T.Task<E.Either<Error, void>> {
-  return program(options.url, options.destination, options.exitOnInvalidType);
+function executeProgram({
+  url,
+  destination,
+  exitOnInvalidType,
+  type
+}: CliConfig): T.Task<E.Either<Error, void>> {
+  return program(url, destination, { exitOnInvalidType, type });
 }
 
 function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {

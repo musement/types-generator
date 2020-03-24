@@ -25,8 +25,8 @@ var arg_1 = __importDefault(require("arg"));
 var inquirer_1 = __importDefault(require("inquirer"));
 var T = __importStar(require("fp-ts/lib/Task"));
 var E = __importStar(require("fp-ts/lib/Either"));
-var program_1 = require("./program");
 var pipeable_1 = require("fp-ts/lib/pipeable");
+var program_1 = require("./program");
 function parseArgumentsIntoOptions(rawArgs) {
     var args = arg_1.default({
         "--destination": String,
@@ -43,7 +43,8 @@ function parseArgumentsIntoOptions(rawArgs) {
     return {
         destination: args["--destination"],
         url: args["--url"],
-        exitOnInvalidType: args["--exitOnInvalidType"] || false
+        exitOnInvalidType: args["--exitOnInvalidType"] || false,
+        type: args["--type"]
     };
 }
 function getQuestions(options) {
@@ -64,6 +65,15 @@ function getQuestions(options) {
             default: "core.3.4.0.d.ts"
         });
     }
+    if (!options.type) {
+        questions.push({
+            type: "list",
+            name: "type",
+            message: "Types to generate",
+            choices: ["TypeScript", "Flow"],
+            default: "TypeScript"
+        });
+    }
     return questions;
 }
 function checkOptions(answers) {
@@ -73,6 +83,9 @@ function checkOptions(answers) {
     if (!answers.destination) {
         return E.left(new Error("Destination is missing"));
     }
+    if (!answers.type) {
+        return E.left(new Error("Type is missing"));
+    }
     return E.right(answers);
 }
 function getAnswers(questions) {
@@ -81,8 +94,9 @@ function getAnswers(questions) {
 function promptForMissingOptions(options) {
     return pipeable_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
 }
-function executeProgram(options) {
-    return program_1.program(options.url, options.destination, options.exitOnInvalidType);
+function executeProgram(_a) {
+    var url = _a.url, destination = _a.destination, exitOnInvalidType = _a.exitOnInvalidType, type = _a.type;
+    return program_1.program(url, destination, { exitOnInvalidType: exitOnInvalidType, type: type });
 }
 function output(result) {
     return pipeable_1.pipe(result, T.map(E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); })));

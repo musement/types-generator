@@ -1,5 +1,8 @@
 import { getDefinitions, getType, generate } from "../generate";
 import { right, left } from "fp-ts/lib/Either";
+import { Options } from "../models/Options";
+
+const baseOptions: Options = { exitOnInvalidType: true, type: "TypeScript" };
 
 describe("getDefinitions", () => {
   describe("when the swagger contains the schemas", () => {
@@ -101,16 +104,14 @@ describe("getDefinitions", () => {
 describe("getType", () => {
   describe("string", () => {
     test("it returns a valid type", () => {
-      expect(getType({ exitOnInvalidType: true })({ type: "string" })).toEqual(
-        right("string")
-      );
+      expect(getType(baseOptions)({ type: "string" })).toEqual(right("string"));
     });
   });
 
   describe("string with enum", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           type: "string",
           enum: ["text", "date", "number"]
         })
@@ -120,15 +121,13 @@ describe("getType", () => {
 
   describe("number", () => {
     test("it returns a valid type", () => {
-      expect(getType({ exitOnInvalidType: true })({ type: "number" })).toEqual(
-        right("number")
-      );
+      expect(getType(baseOptions)({ type: "number" })).toEqual(right("number"));
     });
   });
 
   describe("integer", () => {
     test("it returns a valid type", () => {
-      expect(getType({ exitOnInvalidType: true })({ type: "integer" })).toEqual(
+      expect(getType(baseOptions)({ type: "integer" })).toEqual(
         right("number")
       );
     });
@@ -137,7 +136,7 @@ describe("getType", () => {
   describe("reference", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           $ref: "#/components/schemas/ExtraCustomerDataField"
         })
       ).toEqual(right("ExtraCustomerDataField"));
@@ -146,7 +145,7 @@ describe("getType", () => {
     describe("when the reference name contains '-'", () => {
       test("it converts the name to PascalCase", () => {
         expect(
-          getType({ exitOnInvalidType: true })({
+          getType(baseOptions)({
             $ref: "#/components/schemas/extra-customer-data-field"
           })
         ).toEqual(right("ExtraCustomerDataField"));
@@ -157,7 +156,7 @@ describe("getType", () => {
   describe("array", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           type: "array",
           items: {
             $ref: "#/components/schemas/FormFieldDefinition"
@@ -170,7 +169,7 @@ describe("getType", () => {
   describe("allOf", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           type: "",
           allOf: [
             {
@@ -187,7 +186,7 @@ describe("getType", () => {
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType({ exitOnInvalidType: true })({
+          getType(baseOptions)({
             type: "",
             allOf: [
               { type: "first invalid type" } as never,
@@ -204,7 +203,7 @@ describe("getType", () => {
   describe("anyOf", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           type: "",
           anyOf: [
             {
@@ -221,7 +220,7 @@ describe("getType", () => {
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType({ exitOnInvalidType: true })({
+          getType(baseOptions)({
             type: "",
             anyOf: [
               { type: "first invalid type" } as never,
@@ -238,7 +237,7 @@ describe("getType", () => {
   describe("oneOf", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           type: "",
           oneOf: [
             {
@@ -255,7 +254,7 @@ describe("getType", () => {
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType({ exitOnInvalidType: true })({
+          getType(baseOptions)({
             type: "",
             oneOf: [
               { type: "first invalid type" } as never,
@@ -272,7 +271,7 @@ describe("getType", () => {
   describe("object", () => {
     test("it returns a valid type", () => {
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           properties: {
             code: { type: "string" },
             message: { type: "string" },
@@ -283,7 +282,7 @@ describe("getType", () => {
       ).toEqual(right("{code:string,message:string,data:string}"));
 
       expect(
-        getType({ exitOnInvalidType: true })({
+        getType(baseOptions)({
           properties: {
             names: { type: "string" },
             data: {
@@ -301,16 +300,16 @@ describe("getType", () => {
 
     describe("when it doesn't contain 'properties'", () => {
       test("it returns an error", () => {
-        expect(
-          getType({ exitOnInvalidType: true })({ type: "object" })
-        ).toEqual(left(new Error('Invalid type: {"type":"object"}')));
+        expect(getType(baseOptions)({ type: "object" })).toEqual(
+          left(new Error('Invalid type: {"type":"object"}'))
+        );
       });
     });
 
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType({ exitOnInvalidType: true })({
+          getType(baseOptions)({
             properties: {
               code: { type: "string" },
               message: { type: "first invalid type" as never },
@@ -328,16 +327,18 @@ describe("getType", () => {
   describe("invalid type", () => {
     describe("when exitOnInvalidType is true", () => {
       test("it returns an error", () => {
-        expect(
-          getType({ exitOnInvalidType: true })({ type: "invalid" } as never)
-        ).toEqual(left(new Error('Invalid type: {"type":"invalid"}')));
+        expect(getType(baseOptions)({ type: "invalid" } as never)).toEqual(
+          left(new Error('Invalid type: {"type":"invalid"}'))
+        );
       });
     });
 
     describe("when exitOnInvalidType is false", () => {
       test("it returns 'never'", () => {
         expect(
-          getType({ exitOnInvalidType: false })({ type: "invalid" } as never)
+          getType({ ...baseOptions, exitOnInvalidType: false })({
+            type: "invalid"
+          } as never)
         ).toEqual(right("never"));
       });
     });
@@ -348,7 +349,7 @@ describe("generate", () => {
   describe("when the swagger is valid", () => {
     test("it returns the type definitios", () => {
       expect(
-        generate({ exitOnInvalidType: false })({
+        generate({ ...baseOptions, exitOnInvalidType: false })({
           openapi: "3.0.0",
           components: {
             schemas: {
@@ -399,7 +400,7 @@ describe("generate", () => {
   describe("when a type name contains '-'", () => {
     test("it converts the name to PascalCase", () => {
       expect(
-        generate({ exitOnInvalidType: true })({
+        generate(baseOptions)({
           openapi: "3.0.0",
           components: {
             schemas: {
@@ -423,7 +424,9 @@ describe("generate", () => {
   describe("when 'getDefinitions' returns an error", () => {
     test("it returns the error", () => {
       expect(
-        generate({ exitOnInvalidType: false })({ openapi: "3.0.0" })
+        generate({ ...baseOptions, exitOnInvalidType: false })({
+          openapi: "3.0.0"
+        })
       ).toEqual(left(new Error("There is no definition")));
     });
   });

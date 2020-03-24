@@ -30,12 +30,12 @@ function flatWrite(destination: string) {
 export function program(
   swaggerUrl: string,
   destination: string,
-  exitOnInvalidType: boolean
+  options: Options
 ): T.Task<E.Either<Error, void>> {
   return pipe(
     swaggerUrl,
     getContent,
-    flatGenerate({ exitOnInvalidType }),
+    flatGenerate(options),
     flatWrite(destination)
   );
 }

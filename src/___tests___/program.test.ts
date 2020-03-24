@@ -33,11 +33,17 @@ describe("program", () => {
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", true);
+      const task = program("swagger_url", "filename", {
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       const result = await task();
 
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(generate).toHaveBeenCalledWith({
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
       expect(actualWrite).toHaveBeenCalledWith("generated types");
@@ -60,7 +66,10 @@ describe("program", () => {
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", true);
+      const task = program("swagger_url", "filename", {
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       const result = await task();
 
       expect(getContent).toHaveBeenCalledWith("swagger_url");
@@ -90,11 +99,17 @@ describe("program", () => {
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", true);
+      const task = program("swagger_url", "filename", {
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       const result = await task();
 
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(generate).toHaveBeenCalledWith({
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
       expect(actualWrite).not.toHaveBeenCalled();
@@ -121,11 +136,17 @@ describe("program", () => {
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", true);
+      const task = program("swagger_url", "filename", {
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       const result = await task();
 
       expect(getContent).toHaveBeenCalledWith("swagger_url");
-      expect(generate).toHaveBeenCalledWith({ exitOnInvalidType: true });
+      expect(generate).toHaveBeenCalledWith({
+        exitOnInvalidType: true,
+        type: "Flow"
+      });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
       expect(actualWrite).toHaveBeenCalledWith("generated types");

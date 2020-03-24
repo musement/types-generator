@@ -5,10 +5,7 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { SchemaObject } from "./models/SchemaObject";
 import { ReferenceObject } from "./models/ReferenceObject";
-
-type Options = {
-  exitOnInvalidType: boolean;
-};
+import { Options } from "./models/Options";
 
 function getDefinitions(
   swagger: Swagger

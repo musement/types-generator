@@ -23,7 +23,7 @@ function flatWrite(destination) {
         }), T.map(E.flatten));
     };
 }
-function program(swaggerUrl, destination, exitOnInvalidType) {
-    return pipeable_1.pipe(swaggerUrl, dowload_1.getContent, flatGenerate({ exitOnInvalidType: exitOnInvalidType }), flatWrite(destination));
+function program(swaggerUrl, destination, options) {
+    return pipeable_1.pipe(swaggerUrl, dowload_1.getContent, flatGenerate(options), flatWrite(destination));
 }
 exports.program = program;
