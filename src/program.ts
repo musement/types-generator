@@ -1,7 +1,7 @@
 import * as E from "fp-ts/lib/Either";
 import * as T from "fp-ts/lib/Task";
 import { pipe } from "fp-ts/lib/pipeable";
-import { getContent } from "./dowload";
+import { getContent } from "./read";
 import { generate } from "./generate";
 import { write } from "./write";
 import { Options } from "./models/Options";

@@ -1,11 +1,11 @@
 import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
 import { program } from "../program";
-import { getContent } from "../dowload";
+import { getContent } from "../read";
 import { generate } from "../generate";
 import { write } from "../write";
 
-jest.mock("../dowload", () => ({ getContent: jest.fn() }));
+jest.mock("../read", () => ({ getContent: jest.fn() }));
 jest.mock("../generate", () => ({ generate: jest.fn() }));
 jest.mock("../write", () => ({ write: jest.fn(() => jest.fn()) }));
 

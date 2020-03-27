@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var E = __importStar(require("fp-ts/lib/Either"));
 var T = __importStar(require("fp-ts/lib/Task"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
-var dowload_1 = require("./dowload");
+var read_1 = require("./read");
 var generate_1 = require("./generate");
 var write_1 = require("./write");
 function flatGenerate(options) {
@@ -24,6 +24,6 @@ function flatWrite(destination) {
     };
 }
 function program(swaggerUrl, destination, options) {
-    return pipeable_1.pipe(swaggerUrl, dowload_1.getContent, flatGenerate(options), flatWrite(destination));
+    return pipeable_1.pipe(swaggerUrl, read_1.getContent, flatGenerate(options), flatWrite(destination));
 }
 exports.program = program;

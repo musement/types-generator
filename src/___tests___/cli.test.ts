@@ -23,7 +23,7 @@ describe("cli", () => {
       await cli([
         "node",
         "generate-types",
-        "--url",
+        "--source",
         "swagger_url",
         "--destination",
         "filename.d.ts",
@@ -48,7 +48,7 @@ describe("cli", () => {
         await cli([
           "node",
           "generate-types",
-          "--url",
+          "--source",
           "swagger_url",
           "--destination",
           "filename.d.ts",
@@ -60,8 +60,8 @@ describe("cli", () => {
     });
   });
 
-  describe("when url is missing", () => {
-    test("it prompts for the url", async () => {
+  describe("when source is missing", () => {
+    test("it prompts for the source", async () => {
       await cli([
         "node",
         "generate-types",
@@ -75,17 +75,17 @@ describe("cli", () => {
       expect(prompt).toHaveBeenCalledWith([
         {
           type: "string",
-          name: "url",
-          message: "Swagger's url",
+          name: "source",
+          message: "Swagger's url or path",
           default: "https://api.musement.com/swagger_3.4.0.json?2"
         }
       ]);
     });
 
-    describe("when user types a valid url", () => {
+    describe("when user types a valid source", () => {
       test("it returns a task that executes the program", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
-          url: "swagger_url"
+          source: "swagger_url"
         });
         await cli([
           "node",
@@ -103,10 +103,10 @@ describe("cli", () => {
       });
     });
 
-    describe("when user types an empty url", () => {
+    describe("when user types an empty source", () => {
       test("it returns a task that returns an error", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
-          url: ""
+          source: ""
         });
         await cli([
           "node",
@@ -116,7 +116,9 @@ describe("cli", () => {
           "--exitOnInvalidType"
         ])();
         expect(program).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith(new Error("Url is missing"));
+        expect(console.error).toHaveBeenCalledWith(
+          new Error("Source is missing")
+        );
       });
     });
   });
@@ -126,7 +128,7 @@ describe("cli", () => {
       await cli([
         "node",
         "generate-types",
-        "--url",
+        "--source",
         "swagger_url",
         "--exitOnInvalidType",
         "--type",
@@ -151,7 +153,7 @@ describe("cli", () => {
         await cli([
           "node",
           "generate-types",
-          "--url",
+          "--source",
           "swagger_url",
           "--exitOnInvalidType",
           "--type",
@@ -172,7 +174,7 @@ describe("cli", () => {
         await cli([
           "node",
           "generate-types",
-          "--url",
+          "--source",
           "swagger_url",
           "--exitOnInvalidType"
         ])();
@@ -189,7 +191,7 @@ describe("cli", () => {
       await cli([
         "node",
         "generate-types",
-        "--url",
+        "--source",
         "swagger_url",
         "--exitOnInvalidType",
         "--destination",
@@ -215,7 +217,7 @@ describe("cli", () => {
         await cli([
           "node",
           "generate-types",
-          "--url",
+          "--source",
           "swagger_url",
           "--destination",
           "filename.d.ts",
@@ -236,7 +238,7 @@ describe("cli", () => {
         await cli([
           "node",
           "generate-types",
-          "--url",
+          "--source",
           "swagger_url",
           "--destination",
           "core.3.4.0.d.ts",
@@ -256,7 +258,7 @@ describe("cli", () => {
       await cli([
         "node",
         "generate-types",
-        "--url",
+        "--source",
         "swagger_url",
         "--destination",
         "filename.d.ts",

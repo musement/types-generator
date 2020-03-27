@@ -1,6 +1,6 @@
 export interface CliConfig {
   destination: string;
-  url: string;
+  source: string;
   exitOnInvalidType: boolean;
   type: "Flow" | "TypeScript";
 }

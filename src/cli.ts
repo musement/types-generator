@@ -10,11 +10,11 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   const args = arg(
     {
       "--destination": String,
-      "--url": String,
+      "--source": String,
       "--type": String,
       "--exitOnInvalidType": Boolean,
       "-d": "--destination",
-      "-u": "--url",
+      "-s": "--source",
       "-t": "--type",
       "-e": "--exitOnInvalidType"
     },
@@ -24,7 +24,7 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   );
   return {
     destination: args["--destination"],
-    url: args["--url"],
+    source: args["--source"],
     exitOnInvalidType: args["--exitOnInvalidType"] || false,
     type: args["--type"] as "Flow" | "TypeScript" | undefined
   };
@@ -34,11 +34,11 @@ function getQuestions(
   options: Partial<CliConfig>
 ): (inquirer.ListQuestion | inquirer.Question)[] {
   const questions: (inquirer.ListQuestion | inquirer.Question)[] = [];
-  if (!options.url) {
+  if (!options.source) {
     questions.push({
       type: "string",
-      name: "url",
-      message: "Swagger's url",
+      name: "source",
+      message: "Swagger's url or path",
       default: "https://api.musement.com/swagger_3.4.0.json?2"
     });
   }
@@ -66,8 +66,8 @@ function getQuestions(
 }
 
 function checkOptions(answers: CliConfig): E.Either<Error, CliConfig> {
-  if (!answers.url) {
-    return E.left(new Error("Url is missing"));
+  if (!answers.source) {
+    return E.left(new Error("Source is missing"));
   }
   if (!answers.destination) {
     return E.left(new Error("Destination is missing"));
@@ -97,12 +97,12 @@ function promptForMissingOptions(
 }
 
 function executeProgram({
-  url,
+  source,
   destination,
   exitOnInvalidType,
   type
 }: CliConfig): T.Task<E.Either<Error, void>> {
-  return program(url, destination, { exitOnInvalidType, type });
+  return program(source, destination, { exitOnInvalidType, type });
 }
 
 function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {
