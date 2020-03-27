@@ -55,6 +55,14 @@ function getTypeUnknown(options: Options): string {
   return options.type === "TypeScript" ? "unknown" : "mixed";
 }
 
+function getExactObject(options: Options) {
+  return function(properties: string[]): string {
+    return options.type === "TypeScript"
+      ? `{${properties.join(",")}}`
+      : `{|${properties.join(",")}|}`;
+  };
+}
+
 function getType(options: Options) {
   return function(
     property: SchemaObject | ReferenceObject
@@ -102,7 +110,7 @@ function getType(options: Options) {
       return pipe(
         property.properties,
         getTypesFromProperties(options),
-        E.map(properties => `{${properties.join(",")}}`)
+        E.map(getExactObject(options))
       );
     }
     return options.exitOnInvalidType

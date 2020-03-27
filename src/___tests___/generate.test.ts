@@ -269,33 +269,44 @@ describe("getType", () => {
   });
 
   describe("object", () => {
-    test("it returns a valid type", () => {
-      expect(
-        getType(baseOptions)({
-          properties: {
-            code: { type: "string" },
-            message: { type: "string" },
-            data: { type: "string" }
-          },
-          type: "object"
-        })
-      ).toEqual(right("{code:string,message:string,data:string}"));
-
-      expect(
-        getType(baseOptions)({
-          properties: {
-            names: { type: "string" },
-            data: {
-              type: "object",
-              properties: {
-                age: { type: "number" },
-                address: { type: "string" }
+    describe('when options.type === "TypeScript"', () => {
+      test("it returns a valid type", () => {
+        expect(
+          getType({ ...baseOptions, type: "TypeScript" })({
+            properties: {
+              names: { type: "string" },
+              data: {
+                type: "object",
+                properties: {
+                  age: { type: "number" },
+                  address: { type: "string" }
+                }
               }
-            }
-          },
-          type: "object"
-        })
-      ).toEqual(right("{names:string,data:{age:number,address:string}}"));
+            },
+            type: "object"
+          })
+        ).toEqual(right("{names:string,data:{age:number,address:string}}"));
+      });
+    });
+
+    describe('when options.type === "Flow"', () => {
+      test("it returns an exact object", () => {
+        expect(
+          getType({ ...baseOptions, type: "Flow" })({
+            properties: {
+              names: { type: "string" },
+              data: {
+                type: "object",
+                properties: {
+                  age: { type: "number" },
+                  address: { type: "string" }
+                }
+              }
+            },
+            type: "object"
+          })
+        ).toEqual(right("{|names:string,data:{|age:number,address:string|}|}"));
+      });
     });
 
     describe("when it doesn't contain 'properties'", () => {

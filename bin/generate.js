@@ -39,6 +39,13 @@ function getTypesFromProperties(options) {
 function getTypeUnknown(options) {
     return options.type === "TypeScript" ? "unknown" : "mixed";
 }
+function getExactObject(options) {
+    return function (properties) {
+        return options.type === "TypeScript"
+            ? "{" + properties.join(",") + "}"
+            : "{|" + properties.join(",") + "|}";
+    };
+}
 function getType(options) {
     return function (property) {
         if ("$ref" in property) {
@@ -66,7 +73,7 @@ function getType(options) {
             return E.right("number");
         }
         if (property.type === "object" && property.properties) {
-            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(function (properties) { return "{" + properties.join(",") + "}"; }));
+            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(getExactObject(options)));
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
