@@ -649,6 +649,14 @@ describe("generate", () => {
     });
   });
 
+  describe("when openapi version is not supported", () => {
+    test("it returns an error", () => {
+      expect(generate(baseOptions)({ openapi: "3.2.0" })).toEqual(
+        left(new Error("Version not supported: 3.2.0"))
+      );
+    });
+  });
+
   describe("when a type name contains '-'", () => {
     test("it converts the name to PascalCase", () => {
       expect(

@@ -168,11 +168,18 @@ function getTypesFromSchemas(options: Options) {
   };
 }
 
+function checkOpenApiVersion(swagger: Swagger): E.Either<Error, Swagger> {
+  return swagger.openapi.match(/3\.0\.\d+/)
+    ? E.right(swagger)
+    : E.left(new Error(`Version not supported: ${swagger.openapi}`));
+}
+
 function generate(options: Options) {
   return function(swagger: Swagger): E.Either<Error, string> {
     return pipe(
       swagger,
-      getDefinitions,
+      checkOpenApiVersion,
+      E.chain(getDefinitions),
       E.chain(getTypesFromSchemas(options)),
       E.map(properties =>
         properties.map(prop => `export type ${prop}`).join(";")

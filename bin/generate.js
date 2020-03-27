@@ -107,9 +107,14 @@ function getTypesFromSchemas(options) {
         }));
     };
 }
+function checkOpenApiVersion(swagger) {
+    return swagger.openapi.match(/3\.0\.\d+/)
+        ? E.right(swagger)
+        : E.left(new Error("Version not supported: " + swagger.openapi));
+}
 function generate(options) {
     return function (swagger) {
-        return pipeable_1.pipe(swagger, getDefinitions, E.chain(getTypesFromSchemas(options)), E.map(function (properties) {
+        return pipeable_1.pipe(swagger, checkOpenApiVersion, E.chain(getDefinitions), E.chain(getTypesFromSchemas(options)), E.map(function (properties) {
             return properties.map(function (prop) { return "export type " + prop; }).join(";");
         }));
     };
