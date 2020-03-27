@@ -7,7 +7,10 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch --coverage",
     "build": "tsc -p .",
-    "build:watch": "tsc -p . --watch"
+    "build:watch": "tsc -p . --watch",
+    "lint": "eslint src --ext .ts",
+    "typescript:check": "tsc -p . --noEmit",
+    "release": "npm run test && standard-version -a"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +35,8 @@
   "devDependencies": {
     "@babel/preset-env": "^7.8.7",
     "@babel/preset-typescript": "^7.8.3",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
     "@types/inquirer": "^6.5.0",
     "@types/jest": "^25.1.4",
     "@types/js-yaml": "^3.12.2",
@@ -42,7 +47,9 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
     "jest": "^25.1.0",
+    "standard-version": "^7.1.0",
     "typescript": "^3.8.3"
   },
   "jest": {
@@ -60,6 +67,19 @@
         "functions": 100,
         "lines": 100
       }
+    }
+  },
+  "standard-version": {
+    "scripts": {
+      "prerelease": "npm run build",
+      "precommit": "git add bin"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run typescript:check",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "npm run lint && npm run test"
     }
   }
 }
