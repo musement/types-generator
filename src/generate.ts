@@ -26,26 +26,41 @@ function getReferenceName(reference: string): string {
   return pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
 }
 
-function combineKeyAndProperty(
-  key: string,
-  property: SchemaObject | ReferenceObject,
-  separator: string,
-  options: Options
-): E.Either<Error, string> {
+function combineKeyAndProperty({
+  key,
+  property,
+  separator,
+  options,
+  required
+}: {
+  key: string;
+  property: SchemaObject | ReferenceObject;
+  separator: string;
+  options: Options;
+  required?: boolean;
+}): E.Either<Error, string> {
   return pipe(
     getType(options)(property),
-    E.map(type => `${key}${separator}${type}`)
+    E.map(type => `${key}${required ? "" : "?"}${separator}${type}`)
   );
 }
 
-function getTypesFromProperties(options: Options) {
+function getTypesFromProperties(options: Options, required?: string[]) {
   return function(properties: {
     [key: string]: SchemaObject | ReferenceObject;
   }): E.Either<Error, string[]> {
     return pipe(
       A.array.traverse(E.either)(
         Object.entries(properties),
-        ([key, property]) => combineKeyAndProperty(key, property, ":", options)
+        ([key, property]) => {
+          return combineKeyAndProperty({
+            key,
+            property,
+            separator: ":",
+            options,
+            required: required ? required.indexOf(key) !== -1 : false
+          });
+        }
       )
     );
   };
@@ -124,7 +139,7 @@ function getType(options: Options) {
     if (property.type === "object" && property.properties) {
       return pipe(
         property.properties,
-        getTypesFromProperties(options),
+        getTypesFromProperties(options, property.required),
         E.map(getExactObject(options)),
         E.map(getTypeNullable(property))
       );
@@ -141,7 +156,13 @@ function getTypesFromSchemas(options: Options) {
   }): E.Either<Error, string[]> {
     return pipe(
       A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
-        combineKeyAndProperty(sanitizeKey(key), property, "=", options)
+        combineKeyAndProperty({
+          key: sanitizeKey(key),
+          property,
+          separator: "=",
+          options,
+          required: true
+        })
       )
     );
   };

@@ -25,14 +25,21 @@ function sanitizeKey(key) {
 function getReferenceName(reference) {
     return pipeable_1.pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
 }
-function combineKeyAndProperty(key, property, separator, options) {
-    return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return "" + key + separator + type; }));
+function combineKeyAndProperty(_a) {
+    var key = _a.key, property = _a.property, separator = _a.separator, options = _a.options, required = _a.required;
+    return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return "" + key + (required ? "" : "?") + separator + type; }));
 }
-function getTypesFromProperties(options) {
+function getTypesFromProperties(options, required) {
     return function (properties) {
         return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(properties), function (_a) {
             var key = _a[0], property = _a[1];
-            return combineKeyAndProperty(key, property, ":", options);
+            return combineKeyAndProperty({
+                key: key,
+                property: property,
+                separator: ":",
+                options: options,
+                required: required ? required.indexOf(key) !== -1 : false
+            });
         }));
     };
 }
@@ -78,7 +85,7 @@ function getType(options) {
             return E.right(pipeable_1.pipe("number", getTypeNullable(property)));
         }
         if (property.type === "object" && property.properties) {
-            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(getExactObject(options)), E.map(getTypeNullable(property)));
+            return pipeable_1.pipe(property.properties, getTypesFromProperties(options, property.required), E.map(getExactObject(options)), E.map(getTypeNullable(property)));
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
@@ -90,7 +97,13 @@ function getTypesFromSchemas(options) {
     return function (schemas) {
         return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(schemas), function (_a) {
             var key = _a[0], property = _a[1];
-            return combineKeyAndProperty(sanitizeKey(key), property, "=", options);
+            return combineKeyAndProperty({
+                key: sanitizeKey(key),
+                property: property,
+                separator: "=",
+                options: options,
+                required: true
+            });
         }));
     };
 }

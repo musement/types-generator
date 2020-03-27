@@ -452,7 +452,7 @@ describe("getType", () => {
             },
             type: "object"
           })
-        ).toEqual(right("{names:string,data:{age:number,address:string}}"));
+        ).toEqual(right("{names?:string,data?:{age?:number,address?:string}}"));
       });
     });
 
@@ -472,7 +472,9 @@ describe("getType", () => {
             },
             type: "object"
           })
-        ).toEqual(right("{|names:string,data:{|age:number,address:string|}|}"));
+        ).toEqual(
+          right("{|names?:string,data?:{|age?:number,address?:string|}|}")
+        );
       });
     });
 
@@ -494,7 +496,36 @@ describe("getType", () => {
             nullable: true
           })
         ).toEqual(
-          right("({names:(string|null),data:{age:number,address:string}}|null)")
+          right(
+            "({names?:(string|null),data?:{age?:number,address?:string}}|null)"
+          )
+        );
+      });
+    });
+
+    describe("when the property has required fields", () => {
+      test("it returns a valid type", () => {
+        expect(
+          getType({ ...baseOptions, type: "TypeScript" })({
+            properties: {
+              names: { type: "string" },
+              addresses: { type: "string" },
+              data: {
+                type: "object",
+                properties: {
+                  age: { type: "number" },
+                  address: { type: "string" }
+                },
+                required: ["age"]
+              }
+            },
+            type: "object",
+            required: ["names", "data"]
+          })
+        ).toEqual(
+          right(
+            "{names:string,addresses?:string,data:{age:number,address?:string}}"
+          )
         );
       });
     });
@@ -612,7 +643,7 @@ describe("generate", () => {
         })
       ).toEqual(
         right(
-          "export type ExceptionResponse={code:string,message:string,data:string};export type FormFieldValue={name:string,value:string}"
+          "export type ExceptionResponse={code?:string,message?:string,data?:string};export type FormFieldValue={name?:string,value?:string}"
         )
       );
     });
@@ -638,7 +669,7 @@ describe("generate", () => {
             }
           }
         })
-      ).toEqual(right("export type ExceptionResponse={code:string}"));
+      ).toEqual(right("export type ExceptionResponse={code?:string}"));
     });
   });
 

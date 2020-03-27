@@ -49,5 +49,6 @@ export type SchemaObject = {
       properties?: {
         [key: string]: SchemaObject | ReferenceObject;
       };
+      required?: string[];
     }
 );
