@@ -51,6 +51,10 @@ function getTypesFromProperties(options: Options) {
   };
 }
 
+function getTypeUnknown(options: Options): string {
+  return options.type === "TypeScript" ? "unknown" : "mixed";
+}
+
 function getType(options: Options) {
   return function(
     property: SchemaObject | ReferenceObject
@@ -103,7 +107,7 @@ function getType(options: Options) {
     }
     return options.exitOnInvalidType
       ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
-      : E.right("never");
+      : E.right(getTypeUnknown(options));
   };
 }
 

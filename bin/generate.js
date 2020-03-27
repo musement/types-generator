@@ -36,6 +36,9 @@ function getTypesFromProperties(options) {
         }));
     };
 }
+function getTypeUnknown(options) {
+    return options.type === "TypeScript" ? "unknown" : "mixed";
+}
 function getType(options) {
     return function (property) {
         if ("$ref" in property) {
@@ -67,7 +70,7 @@ function getType(options) {
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
-            : E.right("never");
+            : E.right(getTypeUnknown(options));
     };
 }
 exports.getType = getType;

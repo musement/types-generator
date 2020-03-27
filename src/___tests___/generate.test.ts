@@ -334,12 +334,32 @@ describe("getType", () => {
     });
 
     describe("when exitOnInvalidType is false", () => {
-      test("it returns 'never'", () => {
-        expect(
-          getType({ ...baseOptions, exitOnInvalidType: false })({
-            type: "invalid"
-          } as never)
-        ).toEqual(right("never"));
+      describe("when options.type == 'TypeScript'", () => {
+        test("it returns 'unknown'", () => {
+          expect(
+            getType({
+              ...baseOptions,
+              exitOnInvalidType: false,
+              type: "TypeScript"
+            })({
+              type: "invalid"
+            } as never)
+          ).toEqual(right("unknown"));
+        });
+      });
+
+      describe("when options.type == 'Flow'", () => {
+        test("it returns 'mixed'", () => {
+          expect(
+            getType({
+              ...baseOptions,
+              exitOnInvalidType: false,
+              type: "Flow"
+            })({
+              type: "invalid"
+            } as never)
+          ).toEqual(right("mixed"));
+        });
       });
     });
   });
