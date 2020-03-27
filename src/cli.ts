@@ -38,8 +38,7 @@ function getQuestions(
     questions.push({
       type: "string",
       name: "source",
-      message: "Swagger's url or path",
-      default: "https://api.musement.com/swagger_3.4.0.json?2"
+      message: "Swagger's url or path"
     });
   }
 
@@ -47,8 +46,7 @@ function getQuestions(
     questions.push({
       type: "string",
       name: "destination",
-      message: "Name of the file",
-      default: "core.3.4.0.d.ts"
+      message: "Name of the file"
     });
   }
 
