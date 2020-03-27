@@ -422,7 +422,7 @@ describe("generate", () => {
         })
       ).toEqual(
         right(
-          "type ExceptionResponse={code:string,message:string,data:string};type FormFieldValue={name:string,value:string}"
+          "export type ExceptionResponse={code:string,message:string,data:string};export type FormFieldValue={name:string,value:string}"
         )
       );
     });
@@ -448,7 +448,7 @@ describe("generate", () => {
             }
           }
         })
-      ).toEqual(right("type ExceptionResponse={code:string}"));
+      ).toEqual(right("export type ExceptionResponse={code:string}"));
     });
   });
 

@@ -91,7 +91,9 @@ function getTypesFromSchemas(options) {
 }
 function generate(options) {
     return function (swagger) {
-        return pipeable_1.pipe(swagger, getDefinitions, E.chain(getTypesFromSchemas(options)), E.map(function (properties) { return properties.map(function (prop) { return "type " + prop; }).join(";"); }));
+        return pipeable_1.pipe(swagger, getDefinitions, E.chain(getTypesFromSchemas(options)), E.map(function (properties) {
+            return properties.map(function (prop) { return "export type " + prop; }).join(";");
+        }));
     };
 }
 exports.generate = generate;

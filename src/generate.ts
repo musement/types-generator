@@ -137,7 +137,9 @@ function generate(options: Options) {
       swagger,
       getDefinitions,
       E.chain(getTypesFromSchemas(options)),
-      E.map(properties => properties.map(prop => `type ${prop}`).join(";"))
+      E.map(properties =>
+        properties.map(prop => `export type ${prop}`).join(";")
+      )
     );
   };
 }
