@@ -46,34 +46,39 @@ function getExactObject(options) {
             : "{|" + properties.join(",") + "|}";
     };
 }
+function getTypeNullable(property) {
+    return function (type) {
+        return property.nullable ? "(" + type + "|null)" : type;
+    };
+}
 function getType(options) {
     return function (property) {
         if ("$ref" in property) {
-            return E.right(getReferenceName(property.$ref));
+            return E.right(pipeable_1.pipe(getReferenceName(property.$ref), getTypeNullable(property)));
         }
         if (property.type === "array") {
-            return pipeable_1.pipe(property.items, getType(options), E.map(function (type) { return "Array<" + type + ">"; }));
+            return pipeable_1.pipe(property.items, getType(options), E.map(function (type) { return "Array<" + type + ">"; }), E.map(getTypeNullable(property)));
         }
         if (property.type === "string" && property.enum) {
-            return E.right(property.enum.map(function (enumValue) { return "'" + enumValue + "'"; }).join(" | "));
+            return E.right(pipeable_1.pipe(property.enum.map(function (enumValue) { return "'" + enumValue + "'"; }).join("|"), getTypeNullable(property)));
         }
         if ("allOf" in property && property.allOf) {
-            return pipeable_1.pipe(A.array.traverse(E.either)(property.allOf, getType(options)), E.map(function (types) { return types.join(" & "); }));
+            return pipeable_1.pipe(A.array.traverse(E.either)(property.allOf, getType(options)), E.map(function (types) { return types.join("&"); }), E.map(getTypeNullable(property)));
         }
         if ("anyOf" in property && property.anyOf) {
-            return pipeable_1.pipe(A.array.traverse(E.either)(property.anyOf, getType(options)), E.map(function (types) { return types.join(" | "); }));
+            return pipeable_1.pipe(A.array.traverse(E.either)(property.anyOf, getType(options)), E.map(function (types) { return types.join("|"); }), E.map(getTypeNullable(property)));
         }
         if ("oneOf" in property && property.oneOf) {
-            return pipeable_1.pipe(A.array.traverse(E.either)(property.oneOf, getType(options)), E.map(function (types) { return types.join(" | "); }));
+            return pipeable_1.pipe(A.array.traverse(E.either)(property.oneOf, getType(options)), E.map(function (types) { return types.join("|"); }), E.map(getTypeNullable(property)));
         }
         if (["boolean", "number", "null", "string"].indexOf(property.type) !== -1) {
-            return E.right(property.type);
+            return E.right(pipeable_1.pipe(property.type, getTypeNullable(property)));
         }
         if (property.type === "integer") {
-            return E.right("number");
+            return E.right(pipeable_1.pipe("number", getTypeNullable(property)));
         }
         if (property.type === "object" && property.properties) {
-            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(getExactObject(options)));
+            return pipeable_1.pipe(property.properties, getTypesFromProperties(options), E.map(getExactObject(options)), E.map(getTypeNullable(property)));
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))

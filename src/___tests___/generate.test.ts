@@ -106,6 +106,14 @@ describe("getType", () => {
     test("it returns a valid type", () => {
       expect(getType(baseOptions)({ type: "string" })).toEqual(right("string"));
     });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({ type: "string", nullable: true })
+        ).toEqual(right("(string|null)"));
+      });
+    });
   });
 
   describe("string with enum", () => {
@@ -115,13 +123,33 @@ describe("getType", () => {
           type: "string",
           enum: ["text", "date", "number"]
         })
-      ).toEqual(right("'text' | 'date' | 'number'"));
+      ).toEqual(right("'text'|'date'|'number'"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            type: "string",
+            enum: ["text", "date", "number"],
+            nullable: true
+          })
+        ).toEqual(right("('text'|'date'|'number'|null)"));
+      });
     });
   });
 
   describe("number", () => {
     test("it returns a valid type", () => {
       expect(getType(baseOptions)({ type: "number" })).toEqual(right("number"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({ type: "number", nullable: true })
+        ).toEqual(right("(number|null)"));
+      });
     });
   });
 
@@ -130,6 +158,14 @@ describe("getType", () => {
       expect(getType(baseOptions)({ type: "integer" })).toEqual(
         right("number")
       );
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({ type: "integer", nullable: true })
+        ).toEqual(right("(number|null)"));
+      });
     });
   });
 
@@ -140,6 +176,17 @@ describe("getType", () => {
           $ref: "#/components/schemas/ExtraCustomerDataField"
         })
       ).toEqual(right("ExtraCustomerDataField"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            $ref: "#/components/schemas/ExtraCustomerDataField",
+            nullable: true
+          })
+        ).toEqual(right("(ExtraCustomerDataField|null)"));
+      });
     });
 
     describe("when the reference name contains '-'", () => {
@@ -164,6 +211,21 @@ describe("getType", () => {
         })
       ).toEqual(right("Array<FormFieldDefinition>"));
     });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/FormFieldDefinition",
+              nullable: true
+            },
+            nullable: true
+          })
+        ).toEqual(right("(Array<(FormFieldDefinition|null)>|null)"));
+      });
+    });
   });
 
   describe("allOf", () => {
@@ -180,7 +242,42 @@ describe("getType", () => {
             }
           ]
         })
-      ).toEqual(right("PostCartItem & PostCart"));
+      ).toEqual(right("PostCartItem&PostCart"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            type: "",
+            allOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: true
+          })
+        ).toEqual(right("(PostCartItem&(PostCart|null)|null)"));
+        expect(
+          getType(baseOptions)({
+            type: "",
+            allOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: false
+          })
+        ).toEqual(right("PostCartItem&(PostCart|null)"));
+      });
     });
 
     describe("when it contains invalid types", () => {
@@ -214,7 +311,42 @@ describe("getType", () => {
             }
           ]
         })
-      ).toEqual(right("PostCartItem | PostCart"));
+      ).toEqual(right("PostCartItem|PostCart"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            type: "",
+            anyOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: true
+          })
+        ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
+        expect(
+          getType(baseOptions)({
+            type: "",
+            anyOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: false
+          })
+        ).toEqual(right("PostCartItem|(PostCart|null)"));
+      });
     });
 
     describe("when it contains invalid types", () => {
@@ -248,7 +380,42 @@ describe("getType", () => {
             }
           ]
         })
-      ).toEqual(right("PostCartItem | PostCart"));
+      ).toEqual(right("PostCartItem|PostCart"));
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType(baseOptions)({
+            type: "",
+            oneOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: true
+          })
+        ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
+        expect(
+          getType(baseOptions)({
+            type: "",
+            oneOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart",
+                nullable: true
+              }
+            ],
+            nullable: false
+          })
+        ).toEqual(right("PostCartItem|(PostCart|null)"));
+      });
     });
 
     describe("when it contains invalid types", () => {
@@ -306,6 +473,29 @@ describe("getType", () => {
             type: "object"
           })
         ).toEqual(right("{|names:string,data:{|age:number,address:string|}|}"));
+      });
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns a valid type that can be null", () => {
+        expect(
+          getType({ ...baseOptions, type: "TypeScript" })({
+            properties: {
+              names: { type: "string", nullable: true },
+              data: {
+                type: "object",
+                properties: {
+                  age: { type: "number" },
+                  address: { type: "string" }
+                }
+              }
+            },
+            type: "object",
+            nullable: true
+          })
+        ).toEqual(
+          right("({names:(string|null),data:{age:number,address:string}}|null)")
+        );
       });
     });
 

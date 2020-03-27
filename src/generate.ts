@@ -63,54 +63,70 @@ function getExactObject(options: Options) {
   };
 }
 
+function getTypeNullable(property: SchemaObject | ReferenceObject) {
+  return function(type: string): string {
+    return property.nullable ? `(${type}|null)` : type;
+  };
+}
+
 function getType(options: Options) {
   return function(
     property: SchemaObject | ReferenceObject
   ): E.Either<Error, string> {
     if ("$ref" in property) {
-      return E.right(getReferenceName(property.$ref));
+      return E.right(
+        pipe(getReferenceName(property.$ref), getTypeNullable(property))
+      );
     }
     if (property.type === "array") {
       return pipe(
         property.items,
         getType(options),
-        E.map(type => `Array<${type}>`)
+        E.map(type => `Array<${type}>`),
+        E.map(getTypeNullable(property))
       );
     }
     if (property.type === "string" && property.enum) {
       return E.right(
-        property.enum.map(enumValue => `'${enumValue}'`).join(" | ")
+        pipe(
+          property.enum.map(enumValue => `'${enumValue}'`).join("|"),
+          getTypeNullable(property)
+        )
       );
     }
     if ("allOf" in property && property.allOf) {
       return pipe(
         A.array.traverse(E.either)(property.allOf, getType(options)),
-        E.map(types => types.join(" & "))
+        E.map(types => types.join("&")),
+        E.map(getTypeNullable(property))
       );
     }
     if ("anyOf" in property && property.anyOf) {
       return pipe(
         A.array.traverse(E.either)(property.anyOf, getType(options)),
-        E.map(types => types.join(" | "))
+        E.map(types => types.join("|")),
+        E.map(getTypeNullable(property))
       );
     }
     if ("oneOf" in property && property.oneOf) {
       return pipe(
         A.array.traverse(E.either)(property.oneOf, getType(options)),
-        E.map(types => types.join(" | "))
+        E.map(types => types.join("|")),
+        E.map(getTypeNullable(property))
       );
     }
     if (["boolean", "number", "null", "string"].indexOf(property.type) !== -1) {
-      return E.right(property.type);
+      return E.right(pipe(property.type, getTypeNullable(property)));
     }
     if (property.type === "integer") {
-      return E.right("number");
+      return E.right(pipe("number", getTypeNullable(property)));
     }
     if (property.type === "object" && property.properties) {
       return pipe(
         property.properties,
         getTypesFromProperties(options),
-        E.map(getExactObject(options))
+        E.map(getExactObject(options)),
+        E.map(getTypeNullable(property))
       );
     }
     return options.exitOnInvalidType

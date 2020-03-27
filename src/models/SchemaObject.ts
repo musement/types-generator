@@ -13,6 +13,7 @@ export interface ArrayObject extends BaseObject {
 export type SchemaObject = {
   description?: string;
   example?: string;
+  nullable?: boolean;
 } & (
   | {
       type: "string";
