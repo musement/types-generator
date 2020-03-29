@@ -16,35 +16,14 @@ function getDefinitions(swagger) {
         : E.left(new Error("There is no definition"));
 }
 exports.getDefinitions = getDefinitions;
-function sanitizeKey(key) {
+function toCamelCase(key) {
     return key
         .split("-")
         .map(function (token) { return token[0].toUpperCase() + token.slice(1); })
         .join("");
 }
 function getReferenceName(reference) {
-    return pipeable_1.pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
-}
-function combineKeyAndProperty(_a) {
-    var key = _a.key, property = _a.property, separator = _a.separator, options = _a.options, required = _a.required;
-    return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return "" + key + (required ? "" : "?") + separator + type; }));
-}
-function getTypesFromProperties(options, required) {
-    return function (properties) {
-        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(properties), function (_a) {
-            var key = _a[0], property = _a[1];
-            return combineKeyAndProperty({
-                key: key,
-                property: property,
-                separator: ":",
-                options: options,
-                required: required ? required.indexOf(key) !== -1 : false
-            });
-        }));
-    };
-}
-function getTypeUnknown(options) {
-    return options.type === "TypeScript" ? "unknown" : "mixed";
+    return pipeable_1.pipe(reference.replace("#/components/schemas/", ""), toCamelCase);
 }
 function getExactObject(options) {
     return function (properties) {
@@ -52,6 +31,26 @@ function getExactObject(options) {
             ? "{" + properties.join(",") + "}"
             : "{|" + properties.join(",") + "|}";
     };
+}
+function concatKeyAndType(key, isRequired) {
+    return function concatType(type) {
+        return "" + key + (isRequired ? "" : "?") + ":" + type;
+    };
+}
+function isRequired(key, requiredFields) {
+    return requiredFields != null && requiredFields.indexOf(key) !== -1;
+}
+function getTypeObject(options) {
+    return function (_a) {
+        var properties = _a.properties, required = _a.required;
+        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(properties), function (_a) {
+            var key = _a[0], property = _a[1];
+            return pipeable_1.pipe(property, getType(options), E.map(concatKeyAndType(key, isRequired(key, required))));
+        }), E.map(getExactObject(options)));
+    };
+}
+function getTypeUnknown(options) {
+    return options.type === "TypeScript" ? "unknown" : "mixed";
 }
 function getTypeNullable(property) {
     return function (type) {
@@ -85,7 +84,8 @@ function getType(options) {
             return E.right(pipeable_1.pipe("number", getTypeNullable(property)));
         }
         if (property.type === "object" && property.properties) {
-            return pipeable_1.pipe(property.properties, getTypesFromProperties(options, property.required), E.map(getExactObject(options)), E.map(getTypeNullable(property)));
+            var properties = property.properties, required = property.required;
+            return pipeable_1.pipe({ properties: properties, required: required }, getTypeObject(options), E.map(getTypeNullable(property)));
         }
         return options.exitOnInvalidType
             ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
@@ -97,13 +97,7 @@ function getTypesFromSchemas(options) {
     return function (schemas) {
         return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(schemas), function (_a) {
             var key = _a[0], property = _a[1];
-            return combineKeyAndProperty({
-                key: sanitizeKey(key),
-                property: property,
-                separator: "=",
-                options: options,
-                required: true
-            });
+            return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return toCamelCase(key) + "=" + type; }));
         }));
     };
 }

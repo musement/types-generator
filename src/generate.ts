@@ -15,7 +15,7 @@ function getDefinitions(
     : E.left(new Error("There is no definition"));
 }
 
-function sanitizeKey(key: string): string {
+function toCamelCase(key: string): string {
   return key
     .split("-")
     .map(token => token[0].toUpperCase() + token.slice(1))
@@ -23,51 +23,7 @@ function sanitizeKey(key: string): string {
 }
 
 function getReferenceName(reference: string): string {
-  return pipe(reference.replace("#/components/schemas/", ""), sanitizeKey);
-}
-
-function combineKeyAndProperty({
-  key,
-  property,
-  separator,
-  options,
-  required
-}: {
-  key: string;
-  property: SchemaObject | ReferenceObject;
-  separator: string;
-  options: Options;
-  required?: boolean;
-}): E.Either<Error, string> {
-  return pipe(
-    getType(options)(property),
-    E.map(type => `${key}${required ? "" : "?"}${separator}${type}`)
-  );
-}
-
-function getTypesFromProperties(options: Options, required?: string[]) {
-  return function(properties: {
-    [key: string]: SchemaObject | ReferenceObject;
-  }): E.Either<Error, string[]> {
-    return pipe(
-      A.array.traverse(E.either)(
-        Object.entries(properties),
-        ([key, property]) => {
-          return combineKeyAndProperty({
-            key,
-            property,
-            separator: ":",
-            options,
-            required: required ? required.indexOf(key) !== -1 : false
-          });
-        }
-      )
-    );
-  };
-}
-
-function getTypeUnknown(options: Options): string {
-  return options.type === "TypeScript" ? "unknown" : "mixed";
+  return pipe(reference.replace("#/components/schemas/", ""), toCamelCase);
 }
 
 function getExactObject(options: Options) {
@@ -76,6 +32,46 @@ function getExactObject(options: Options) {
       ? `{${properties.join(",")}}`
       : `{|${properties.join(",")}|}`;
   };
+}
+
+function concatKeyAndType(key: string, isRequired: boolean) {
+  return function concatType(type: string): string {
+    return `${key}${isRequired ? "" : "?"}:${type}`;
+  };
+}
+
+function isRequired(
+  key: string,
+  requiredFields: string[] | undefined
+): boolean {
+  return requiredFields != null && requiredFields.indexOf(key) !== -1;
+}
+
+function getTypeObject(options: Options) {
+  return function({
+    properties,
+    required
+  }: {
+    properties: { [key: string]: SchemaObject | ReferenceObject };
+    required?: string[];
+  }): E.Either<Error, string> {
+    return pipe(
+      A.array.traverse(E.either)(
+        Object.entries(properties),
+        ([key, property]) =>
+          pipe(
+            property,
+            getType(options),
+            E.map(concatKeyAndType(key, isRequired(key, required)))
+          )
+      ),
+      E.map(getExactObject(options))
+    );
+  };
+}
+
+function getTypeUnknown(options: Options): string {
+  return options.type === "TypeScript" ? "unknown" : "mixed";
 }
 
 function getTypeNullable(property: SchemaObject | ReferenceObject) {
@@ -137,10 +133,10 @@ function getType(options: Options) {
       return E.right(pipe("number", getTypeNullable(property)));
     }
     if (property.type === "object" && property.properties) {
+      const { properties, required } = property;
       return pipe(
-        property.properties,
-        getTypesFromProperties(options, property.required),
-        E.map(getExactObject(options)),
+        { properties, required },
+        getTypeObject(options),
         E.map(getTypeNullable(property))
       );
     }
@@ -156,13 +152,10 @@ function getTypesFromSchemas(options: Options) {
   }): E.Either<Error, string[]> {
     return pipe(
       A.array.traverse(E.either)(Object.entries(schemas), ([key, property]) =>
-        combineKeyAndProperty({
-          key: sanitizeKey(key),
-          property,
-          separator: "=",
-          options,
-          required: true
-        })
+        pipe(
+          getType(options)(property),
+          E.map(type => `${toCamelCase(key)}=${type}`)
+        )
       )
     );
   };
