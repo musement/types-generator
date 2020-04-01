@@ -33,6 +33,7 @@ function parseArgumentsIntoOptions(rawArgs) {
         "--source": String,
         "--type": String,
         "--exitOnInvalidType": Boolean,
+        "--patchSource": String,
         "-d": "--destination",
         "-s": "--source",
         "-t": "--type",
@@ -44,7 +45,8 @@ function parseArgumentsIntoOptions(rawArgs) {
         destination: args["--destination"],
         source: args["--source"],
         exitOnInvalidType: args["--exitOnInvalidType"] || false,
-        type: args["--type"]
+        type: args["--type"],
+        patchSource: args["--patchSource"]
     };
 }
 function getQuestions(options) {
@@ -93,8 +95,8 @@ function promptForMissingOptions(options) {
     return pipeable_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
 }
 function executeProgram(_a) {
-    var source = _a.source, destination = _a.destination, exitOnInvalidType = _a.exitOnInvalidType, type = _a.type;
-    return program_1.program(source, destination, { exitOnInvalidType: exitOnInvalidType, type: type });
+    var source = _a.source, destination = _a.destination, exitOnInvalidType = _a.exitOnInvalidType, type = _a.type, patchSource = _a.patchSource;
+    return program_1.program(source, destination, { exitOnInvalidType: exitOnInvalidType, type: type }, patchSource);
 }
 function output(result) {
     return pipeable_1.pipe(result, T.map(E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); })));

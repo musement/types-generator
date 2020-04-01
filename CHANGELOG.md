@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.2...v0.0.3) (2020-04-01)
+
+
+### Features
+
+* add patchSource option ([efb90fc](https://gitlab.com/musement/experiments/types-generator/commit/efb90fc1f84d3069e1b33110739785baa1a11540))
+* handle allOf / anyOf / oneOf that have a "type" ([be1881d](https://gitlab.com/musement/experiments/types-generator/commit/be1881d5cdda7f25a231f4f28a48a8cbc9b1e9c1))
+
+
+### Bug Fixes
+
+* handle "object" without properties ([008addd](https://gitlab.com/musement/experiments/types-generator/commit/008adddcbe4d4f8a15ef07f4366cadf5f7281d98))
+
 ### 0.0.2 (2020-03-27)
 
 

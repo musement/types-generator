@@ -23,7 +23,7 @@ function flatWrite(destination) {
         }), T.map(E.flatten));
     };
 }
-function program(swaggerUrl, destination, options) {
-    return pipeable_1.pipe(swaggerUrl, read_1.getContent, flatGenerate(options), flatWrite(destination));
+function program(swaggerUrl, destination, options, patchSource) {
+    return pipeable_1.pipe(swaggerUrl, read_1.getSwagger(patchSource), flatGenerate(options), flatWrite(destination));
 }
 exports.program = program;
