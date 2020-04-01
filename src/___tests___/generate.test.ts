@@ -519,10 +519,8 @@ describe("getType", () => {
     });
 
     describe("when it doesn't contain 'properties'", () => {
-      test("it returns an error", () => {
-        expect(getType(baseOptions)({ type: "object" })).toEqual(
-          left(new Error('Invalid type: {"type":"object"}'))
-        );
+      test("it returns an empty object", () => {
+        expect(getType(baseOptions)({ type: "object" })).toEqual(right("{}"));
       });
     });
 
