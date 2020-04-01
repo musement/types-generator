@@ -12,21 +12,25 @@ export interface ArrayObject extends BaseObject {
 
 export type SchemaObject = {
   description?: string;
-  example?: string;
+  example?: unknown;
   nullable?: boolean;
 } & (
   | {
       type: "string";
       enum?: string[];
+      default?: string;
     }
   | {
       type: "integer";
+      default?: number;
     }
   | {
       type: "number";
+      default?: number;
     }
   | {
       type: "boolean";
+      default?: boolean;
     }
   | {
       type: "array";

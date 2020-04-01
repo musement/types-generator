@@ -3,4 +3,5 @@ export interface CliConfig {
   source: string;
   exitOnInvalidType: boolean;
   type: "Flow" | "TypeScript";
+  patchSource: string | undefined;
 }

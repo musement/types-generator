@@ -13,6 +13,7 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
       "--source": String,
       "--type": String,
       "--exitOnInvalidType": Boolean,
+      "--patchSource": String,
       "-d": "--destination",
       "-s": "--source",
       "-t": "--type",
@@ -26,7 +27,8 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
     destination: args["--destination"],
     source: args["--source"],
     exitOnInvalidType: args["--exitOnInvalidType"] || false,
-    type: args["--type"] as "Flow" | "TypeScript" | undefined
+    type: args["--type"] as "Flow" | "TypeScript" | undefined,
+    patchSource: args["--patchSource"]
   };
 }
 
@@ -98,9 +100,10 @@ function executeProgram({
   source,
   destination,
   exitOnInvalidType,
-  type
+  type,
+  patchSource
 }: CliConfig): T.Task<E.Either<Error, void>> {
-  return program(source, destination, { exitOnInvalidType, type });
+  return program(source, destination, { exitOnInvalidType, type }, patchSource);
 }
 
 function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {

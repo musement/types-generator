@@ -1,14 +1,14 @@
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { getContent } from "../read";
+import { getSwagger } from "../read";
 import { right, left } from "fp-ts/lib/Either";
 
 jest.mock("axios", () => jest.fn());
 jest.mock("fs", () => ({ readFileSync: jest.fn() }));
 jest.mock("path", () => ({ extname: jest.fn(() => "json") }));
 
-describe("getContent", () => {
+describe("getSwagger", () => {
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
@@ -21,7 +21,7 @@ describe("getContent", () => {
           ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
             data: { info: { title: "Musement API" } }
           });
-          const task = getContent("https://test");
+          const task = getSwagger()("https://test");
           const swagger = await task();
           expect(axios).toHaveBeenCalledWith({
             method: "get",
@@ -39,7 +39,7 @@ openapi: "3.0.0"
 info:
   title: Musement API`
           });
-          const task = getContent("https://test");
+          const task = getSwagger()("https://test");
           const swagger = await task();
           expect(axios).toHaveBeenCalledWith({
             method: "get",
@@ -57,7 +57,7 @@ info:
         ((axios as unknown) as jest.Mock).mockRejectedValueOnce(
           new Error("error")
         );
-        const task = getContent("https://test");
+        const task = getSwagger()("https://test");
         const swagger = await task();
         expect(axios).toHaveBeenCalledWith({
           method: "get",
@@ -77,7 +77,7 @@ info:
           );
           ((path.extname as unknown) as jest.Mock).mockReturnValueOnce(".json");
 
-          const task = getContent("test.json");
+          const task = getSwagger()("test.json");
           const swagger = await task();
 
           expect(fs.readFileSync).toHaveBeenCalledWith("test.json", "utf8");
@@ -95,7 +95,7 @@ info:
           );
           ((path.extname as unknown) as jest.Mock).mockReturnValueOnce(".yaml");
 
-          const task = getContent("test.yaml");
+          const task = getSwagger()("test.yaml");
           const swagger = await task();
 
           expect(fs.readFileSync).toHaveBeenCalledWith("test.yaml", "utf8");
@@ -114,11 +114,35 @@ info:
           }
         );
         ((path.extname as unknown) as jest.Mock).mockReturnValueOnce(".json");
-        const task = getContent("test.json");
+        const task = getSwagger()("test.json");
         const swagger = await task();
         expect(fs.readFileSync).toHaveBeenCalledWith("test.json", "utf8");
         expect(swagger).toEqual(left(new Error("error")));
       });
+    });
+  });
+
+  describe('when "patchSource" is given', () => {
+    test("it returns a task that calls axios and applied a patch to the data", async () => {
+      ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
+        data: { components: { schemas: { Property: { type: "string" } } } }
+      });
+      ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
+        data: { Property: { type: "object" } }
+      });
+      const task = getSwagger("https://patch")("https://swagger");
+      const swagger = await task();
+      expect(axios).toHaveBeenNthCalledWith(1, {
+        method: "get",
+        url: "https://swagger"
+      });
+      expect(axios).toHaveBeenNthCalledWith(2, {
+        method: "get",
+        url: "https://patch"
+      });
+      expect(swagger).toEqual(
+        right({ components: { schemas: { Property: { type: "object" } } } })
+      );
     });
   });
 });

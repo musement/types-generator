@@ -29,15 +29,22 @@ describe("cli", () => {
         "filename.d.ts",
         "--exitOnInvalidType",
         "--type",
-        "TypeScript"
+        "TypeScript",
+        "--patchSource",
+        "patch_source"
       ])();
       expect(console.log).toHaveBeenCalledWith("success");
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
-        exitOnInvalidType: true,
-        type: "TypeScript"
-      });
+      expect(program).toHaveBeenCalledWith(
+        "swagger_url",
+        "filename.d.ts",
+        {
+          exitOnInvalidType: true,
+          type: "TypeScript"
+        },
+        "patch_source"
+      );
     });
 
     describe("when the program returns an error", () => {
@@ -95,10 +102,15 @@ describe("cli", () => {
           "--type",
           "Flow"
         ])();
-        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
-          exitOnInvalidType: true,
-          type: "Flow"
-        });
+        expect(program).toHaveBeenCalledWith(
+          "swagger_url",
+          "filename.d.ts",
+          {
+            exitOnInvalidType: true,
+            type: "Flow"
+          },
+          undefined
+        );
       });
     });
 
@@ -157,10 +169,15 @@ describe("cli", () => {
           "--type",
           "TypeScript"
         ])();
-        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
-          exitOnInvalidType: true,
-          type: "TypeScript"
-        });
+        expect(program).toHaveBeenCalledWith(
+          "swagger_url",
+          "filename.d.ts",
+          {
+            exitOnInvalidType: true,
+            type: "TypeScript"
+          },
+          undefined
+        );
       });
     });
 
@@ -221,10 +238,15 @@ describe("cli", () => {
           "filename.d.ts",
           "--exitOnInvalidType"
         ])();
-        expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
-          exitOnInvalidType: true,
-          type: "TypeScript"
-        });
+        expect(program).toHaveBeenCalledWith(
+          "swagger_url",
+          "filename.d.ts",
+          {
+            exitOnInvalidType: true,
+            type: "TypeScript"
+          },
+          undefined
+        );
       });
     });
 
@@ -265,10 +287,15 @@ describe("cli", () => {
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith("swagger_url", "filename.d.ts", {
-        exitOnInvalidType: false,
-        type: "TypeScript"
-      });
+      expect(program).toHaveBeenCalledWith(
+        "swagger_url",
+        "filename.d.ts",
+        {
+          exitOnInvalidType: false,
+          type: "TypeScript"
+        },
+        undefined
+      );
     });
   });
 });

@@ -1,7 +1,7 @@
 import * as E from "fp-ts/lib/Either";
 import * as T from "fp-ts/lib/Task";
 import { pipe } from "fp-ts/lib/pipeable";
-import { getContent } from "./read";
+import { getSwagger } from "./read";
 import { generate } from "./generate";
 import { write } from "./write";
 import { Options } from "./models/Options";
@@ -30,11 +30,12 @@ function flatWrite(destination: string) {
 export function program(
   swaggerUrl: string,
   destination: string,
-  options: Options
+  options: Options,
+  patchSource?: string
 ): T.Task<E.Either<Error, void>> {
   return pipe(
     swaggerUrl,
-    getContent,
+    getSwagger(patchSource),
     flatGenerate(options),
     flatWrite(destination)
   );
