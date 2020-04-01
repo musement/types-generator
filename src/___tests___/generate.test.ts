@@ -232,7 +232,6 @@ describe("getType", () => {
     test("it returns a valid type", () => {
       expect(
         getType(baseOptions)({
-          type: "",
           allOf: [
             {
               $ref: "#/components/schemas/PostCartItem"
@@ -249,7 +248,6 @@ describe("getType", () => {
       test("it returns a valid type that can be null", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -264,7 +262,6 @@ describe("getType", () => {
         ).toEqual(right("(PostCartItem&(PostCart|null)|null)"));
         expect(
           getType(baseOptions)({
-            type: "",
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -284,7 +281,6 @@ describe("getType", () => {
       test("it returns an error with first invalid type", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             allOf: [
               { type: "first invalid type" } as never,
               { type: "second invalid type" } as never
@@ -301,7 +297,6 @@ describe("getType", () => {
     test("it returns a valid type", () => {
       expect(
         getType(baseOptions)({
-          type: "",
           anyOf: [
             {
               $ref: "#/components/schemas/PostCartItem"
@@ -318,7 +313,6 @@ describe("getType", () => {
       test("it returns a valid type that can be null", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             anyOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -333,7 +327,6 @@ describe("getType", () => {
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
           getType(baseOptions)({
-            type: "",
             anyOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -353,7 +346,6 @@ describe("getType", () => {
       test("it returns an error with first invalid type", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             anyOf: [
               { type: "first invalid type" } as never,
               { type: "second invalid type" } as never
@@ -370,7 +362,6 @@ describe("getType", () => {
     test("it returns a valid type", () => {
       expect(
         getType(baseOptions)({
-          type: "",
           oneOf: [
             {
               $ref: "#/components/schemas/PostCartItem"
@@ -387,7 +378,6 @@ describe("getType", () => {
       test("it returns a valid type that can be null", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             oneOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -402,7 +392,6 @@ describe("getType", () => {
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
           getType(baseOptions)({
-            type: "",
             oneOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -422,7 +411,6 @@ describe("getType", () => {
       test("it returns an error with first invalid type", () => {
         expect(
           getType(baseOptions)({
-            type: "",
             oneOf: [
               { type: "first invalid type" } as never,
               { type: "second invalid type" } as never
@@ -561,6 +549,9 @@ describe("getType", () => {
       test("it returns an error", () => {
         expect(getType(baseOptions)({ type: "invalid" } as never)).toEqual(
           left(new Error('Invalid type: {"type":"invalid"}'))
+        );
+        expect(getType(baseOptions)({} as never)).toEqual(
+          left(new Error("Invalid type: {}"))
         );
       });
     });

@@ -37,22 +37,19 @@ export type SchemaObject = {
       items: SchemaObject | ReferenceObject;
     }
   | {
-      type: "";
-      allOf: (SchemaObject | ReferenceObject)[];
-    }
-  | {
-      type: "";
-      oneOf: (SchemaObject | ReferenceObject)[];
-    }
-  | {
-      type: "";
-      anyOf: (SchemaObject | ReferenceObject)[];
-    }
-  | {
       type: "object";
       properties?: {
         [key: string]: SchemaObject | ReferenceObject;
       };
       required?: string[];
+    }
+  | {
+      allOf: (SchemaObject | ReferenceObject)[];
+    }
+  | {
+      oneOf: (SchemaObject | ReferenceObject)[];
+    }
+  | {
+      anyOf: (SchemaObject | ReferenceObject)[];
     }
 );

@@ -126,19 +126,39 @@ function getType(options: Options) {
         E.map(getTypeNullable(property))
       );
     }
-    if (["boolean", "number", "null", "string"].indexOf(property.type) !== -1) {
-      return E.right(pipe(property.type, getTypeNullable(property)));
-    }
-    if (property.type === "integer") {
-      return E.right(pipe("number", getTypeNullable(property)));
-    }
-    if (property.type === "object" && property.properties) {
-      const { properties, required } = property;
-      return pipe(
-        { properties, required },
-        getTypeObject(options),
-        E.map(getTypeNullable(property))
-      );
+    if ("type" in property) {
+      if (property.type === "array") {
+        return pipe(
+          property.items,
+          getType(options),
+          E.map(type => `Array<${type}>`),
+          E.map(getTypeNullable(property))
+        );
+      }
+      if (property.type === "string" && property.enum) {
+        return E.right(
+          pipe(
+            property.enum.map(enumValue => `'${enumValue}'`).join("|"),
+            getTypeNullable(property)
+          )
+        );
+      }
+      if (
+        ["boolean", "number", "null", "string"].indexOf(property.type) !== -1
+      ) {
+        return E.right(pipe(property.type, getTypeNullable(property)));
+      }
+      if (property.type === "integer") {
+        return E.right(pipe("number", getTypeNullable(property)));
+      }
+      if (property.type === "object" && property.properties) {
+        const { properties, required } = property;
+        return pipe(
+          { properties, required },
+          getTypeObject(options),
+          E.map(getTypeNullable(property))
+        );
+      }
     }
     return options.exitOnInvalidType
       ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
