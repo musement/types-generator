@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDefinitions, getType, generate } from "../generate";
 import { right, left } from "fp-ts/lib/Either";
 import { Options } from "../models/Options";
@@ -244,6 +245,24 @@ describe("getType", () => {
       ).toEqual(right("PostCartItem&PostCart"));
     });
 
+    describe("when it contains a type", () => {
+      test("it consider the type as part of 'allOf'", () => {
+        expect(
+          getType(baseOptions)({
+            allOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              }
+            ],
+            type: "object",
+            properties: {
+              itemUuid: { type: "string" }
+            }
+          } as any)
+        ).toEqual(right("PostCartItem&{itemUuid?:string}"));
+      });
+    });
+
     describe("when the property is nullable", () => {
       test("it returns a valid type that can be null", () => {
         expect(
@@ -309,6 +328,24 @@ describe("getType", () => {
       ).toEqual(right("PostCartItem|PostCart"));
     });
 
+    describe("when it contains a type", () => {
+      test("it consider the type as part of 'anyOf'", () => {
+        expect(
+          getType(baseOptions)({
+            anyOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              }
+            ],
+            type: "object",
+            properties: {
+              itemUuid: { type: "string" }
+            }
+          } as any)
+        ).toEqual(right("PostCartItem|{itemUuid?:string}"));
+      });
+    });
+
     describe("when the property is nullable", () => {
       test("it returns a valid type that can be null", () => {
         expect(
@@ -372,6 +409,24 @@ describe("getType", () => {
           ]
         })
       ).toEqual(right("PostCartItem|PostCart"));
+    });
+
+    describe("when it contains a type", () => {
+      test("it consider the type as part of 'oneOf'", () => {
+        expect(
+          getType(baseOptions)({
+            oneOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              }
+            ],
+            type: "object",
+            properties: {
+              itemUuid: { type: "string" }
+            }
+          } as any)
+        ).toEqual(right("PostCartItem|{itemUuid?:string}"));
+      });
     });
 
     describe("when the property is nullable", () => {

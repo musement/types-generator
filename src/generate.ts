@@ -80,73 +80,108 @@ function getTypeNullable(property: SchemaObject | ReferenceObject) {
   };
 }
 
+function fixErrorsOnProperty(
+  property: SchemaObject | ReferenceObject
+): SchemaObject | ReferenceObject {
+  if ("allOf" in property && "type" in property) {
+    const { allOf, ...otherProperties } = property;
+    return {
+      allOf: [
+        ...allOf,
+        { ...otherProperties } as SchemaObject | ReferenceObject
+      ]
+    };
+  }
+  if ("oneOf" in property && "type" in property) {
+    const { oneOf, ...otherProperties } = property;
+    return {
+      oneOf: [
+        ...oneOf,
+        { ...otherProperties } as SchemaObject | ReferenceObject
+      ]
+    };
+  }
+  if ("anyOf" in property && "type" in property) {
+    const { anyOf, ...otherProperties } = property;
+    return {
+      anyOf: [
+        ...anyOf,
+        { ...otherProperties } as SchemaObject | ReferenceObject
+      ]
+    };
+  }
+  return property;
+}
+
 function getType(options: Options) {
   return function(
     property: SchemaObject | ReferenceObject
   ): E.Either<Error, string> {
-    if ("$ref" in property) {
-      return E.right(
-        pipe(getReferenceName(property.$ref), getTypeNullable(property))
-      );
-    }
-    if ("allOf" in property && property.allOf) {
-      return pipe(
-        A.array.traverse(E.either)(property.allOf, getType(options)),
-        E.map(types => types.join("&")),
-        E.map(getTypeNullable(property))
-      );
-    }
-    if ("anyOf" in property && property.anyOf) {
-      return pipe(
-        A.array.traverse(E.either)(property.anyOf, getType(options)),
-        E.map(types => types.join("|")),
-        E.map(getTypeNullable(property))
-      );
-    }
-    if ("oneOf" in property && property.oneOf) {
-      return pipe(
-        A.array.traverse(E.either)(property.oneOf, getType(options)),
-        E.map(types => types.join("|")),
-        E.map(getTypeNullable(property))
-      );
-    }
-    if ("type" in property) {
-      if (property.type === "array") {
-        return pipe(
-          property.items,
-          getType(options),
-          E.map(type => `Array<${type}>`),
-          E.map(getTypeNullable(property))
-        );
-      }
-      if (property.type === "string" && property.enum) {
+    return pipe(property, fixErrorsOnProperty, property => {
+      if ("$ref" in property) {
         return E.right(
-          pipe(
-            property.enum.map(enumValue => `'${enumValue}'`).join("|"),
-            getTypeNullable(property)
-          )
+          pipe(getReferenceName(property.$ref), getTypeNullable(property))
         );
       }
-      if (
-        ["boolean", "number", "null", "string"].indexOf(property.type) !== -1
-      ) {
-        return E.right(pipe(property.type, getTypeNullable(property)));
-      }
-      if (property.type === "integer") {
-        return E.right(pipe("number", getTypeNullable(property)));
-      }
-      if (property.type === "object") {
-        const { properties, required } = property;
+      if ("allOf" in property && property.allOf) {
         return pipe(
-          { properties, required },
-          getTypeObject(options),
+          A.array.traverse(E.either)(property.allOf, getType(options)),
+          E.map(types => types.join("&")),
           E.map(getTypeNullable(property))
         );
       }
-    }
-    return options.exitOnInvalidType
-      ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
-      : E.right(getTypeUnknown(options));
+      if ("anyOf" in property && property.anyOf) {
+        return pipe(
+          A.array.traverse(E.either)(property.anyOf, getType(options)),
+          E.map(types => types.join("|")),
+          E.map(getTypeNullable(property))
+        );
+      }
+      if ("oneOf" in property && property.oneOf) {
+        return pipe(
+          A.array.traverse(E.either)(property.oneOf, getType(options)),
+          E.map(types => types.join("|")),
+          E.map(getTypeNullable(property))
+        );
+      }
+      if ("type" in property) {
+        if (property.type === "array") {
+          return pipe(
+            property.items,
+            getType(options),
+            E.map(type => `Array<${type}>`),
+            E.map(getTypeNullable(property))
+          );
+        }
+        if (property.type === "string" && property.enum) {
+          return E.right(
+            pipe(
+              property.enum.map(enumValue => `'${enumValue}'`).join("|"),
+              getTypeNullable(property)
+            )
+          );
+        }
+        if (
+          ["boolean", "number", "null", "string"].indexOf(property.type) !== -1
+        ) {
+          return E.right(pipe(property.type, getTypeNullable(property)));
+        }
+        if (property.type === "integer") {
+          return E.right(pipe("number", getTypeNullable(property)));
+        }
+        if (property.type === "object") {
+          const { properties, required } = property;
+          return pipe(
+            { properties, required },
+            getTypeObject(options),
+            E.map(getTypeNullable(property))
+          );
+        }
+      }
+      return options.exitOnInvalidType
+        ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
+        : E.right(getTypeUnknown(options));
+    });
   };
 }
 
