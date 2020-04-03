@@ -5,7 +5,6 @@ import fs from "fs";
 import path from "path";
 import * as IE from "fp-ts/lib/IOEither";
 import * as TE from "fp-ts/lib/TaskEither";
-import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Swagger } from "./models/Swagger";
 import { doIf, patch } from "./utils";
@@ -16,31 +15,28 @@ function isUrl(pathOrUrl: string): boolean {
 }
 
 function getContentFromURL<T>(url: string): TE.TaskEither<Error, T> {
-  return (): Promise<E.Either<Error, T>> =>
-    axios({
-      method: "get",
-      url
-    })
-      .then(({ data }) =>
-        E.right(typeof data === "object" ? data : yaml.safeLoad(data))
-      )
-      .catch(error => E.left(error));
+  return TE.tryCatch<Error, T>(
+    () =>
+      axios({ method: "get", url }).then(({ data }) =>
+        typeof data === "object" ? data : yaml.safeLoad(data)
+      ),
+    error => error as Error
+  );
 }
 
 function getContentFromPath<T>(file: string): IE.IOEither<Error, T> {
-  return (): E.Either<Error, T> => {
-    try {
+  return IE.tryCatch(
+    () => {
       const ext = path.extname(file);
       const content = fs.readFileSync(file, "utf8");
       const swagger =
         ext === ".yaml" || ext === ".yml"
           ? (yaml.safeLoad(content) as T)
           : (JSON.parse(content) as T);
-      return E.right(swagger);
-    } catch (error) {
-      return E.left(error);
-    }
-  };
+      return swagger;
+    },
+    error => error as Error
+  );
 }
 
 function getContent<T>(source: string): TE.TaskEither<Error, T> {
