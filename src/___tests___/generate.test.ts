@@ -104,12 +104,12 @@ describe("getDefinitions", () => {
 
 describe("getType", () => {
   describe("string", () => {
-    test("it returns a valid type", () => {
+    test("it returns 'string'", () => {
       expect(getType(baseOptions)({ type: "string" })).toEqual(right("string"));
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns 'string' or null", () => {
         expect(
           getType(baseOptions)({ type: "string", nullable: true })
         ).toEqual(right("(string|null)"));
@@ -118,7 +118,7 @@ describe("getType", () => {
   });
 
   describe("string with enum", () => {
-    test("it returns a valid type", () => {
+    test("it returns the possible values", () => {
       expect(
         getType(baseOptions)({
           type: "string",
@@ -128,7 +128,7 @@ describe("getType", () => {
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns the possible values or null", () => {
         expect(
           getType(baseOptions)({
             type: "string",
@@ -140,13 +140,28 @@ describe("getType", () => {
     });
   });
 
+  describe("boolean", () => {
+    test("it returns boolean", () => {
+      expect(getType(baseOptions)({ type: "boolean" })).toEqual(
+        right("boolean")
+      );
+    });
+
+    describe("when the property is nullable", () => {
+      test("it returns boolean or null", () => {
+        expect(
+          getType(baseOptions)({ type: "boolean", nullable: true })
+        ).toEqual(right("(boolean|null)"));
+      });
+    });
+  });
   describe("number", () => {
-    test("it returns a valid type", () => {
+    test("it returns number", () => {
       expect(getType(baseOptions)({ type: "number" })).toEqual(right("number"));
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns number or null", () => {
         expect(
           getType(baseOptions)({ type: "number", nullable: true })
         ).toEqual(right("(number|null)"));
@@ -155,14 +170,14 @@ describe("getType", () => {
   });
 
   describe("integer", () => {
-    test("it returns a valid type", () => {
+    test("it returns integer", () => {
       expect(getType(baseOptions)({ type: "integer" })).toEqual(
         right("number")
       );
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns integer or null", () => {
         expect(
           getType(baseOptions)({ type: "integer", nullable: true })
         ).toEqual(right("(number|null)"));
@@ -171,7 +186,7 @@ describe("getType", () => {
   });
 
   describe("reference", () => {
-    test("it returns a valid type", () => {
+    test("it returns the referenced type", () => {
       expect(
         getType(baseOptions)({
           $ref: "#/components/schemas/ExtraCustomerDataField"
@@ -180,7 +195,7 @@ describe("getType", () => {
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns the referenced type or null", () => {
         expect(
           getType(baseOptions)({
             $ref: "#/components/schemas/ExtraCustomerDataField",
@@ -202,7 +217,7 @@ describe("getType", () => {
   });
 
   describe("array", () => {
-    test("it returns a valid type", () => {
+    test("it returns array", () => {
       expect(
         getType(baseOptions)({
           type: "array",
@@ -214,7 +229,7 @@ describe("getType", () => {
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns array or null", () => {
         expect(
           getType(baseOptions)({
             type: "array",
@@ -230,7 +245,7 @@ describe("getType", () => {
   });
 
   describe("allOf", () => {
-    test("it returns a valid type", () => {
+    test("it returns a value the contains all of the subschemas", () => {
       expect(
         getType(baseOptions)({
           allOf: [
@@ -313,7 +328,7 @@ describe("getType", () => {
   });
 
   describe("anyOf", () => {
-    test("it returns a valid type", () => {
+    test("it returns a value the contains any of the subschemas", () => {
       expect(
         getType(baseOptions)({
           anyOf: [
@@ -396,7 +411,7 @@ describe("getType", () => {
   });
 
   describe("oneOf", () => {
-    test("it returns a valid type", () => {
+    test("it returns a value the contains one of the subschemas", () => {
       expect(
         getType(baseOptions)({
           oneOf: [
@@ -480,7 +495,7 @@ describe("getType", () => {
 
   describe("object", () => {
     describe('when options.type === "TypeScript"', () => {
-      test("it returns a valid type", () => {
+      test("it returns an object with its properties", () => {
         expect(
           getType({ ...baseOptions, type: "TypeScript" })({
             properties: {
@@ -522,7 +537,7 @@ describe("getType", () => {
     });
 
     describe("when the property is nullable", () => {
-      test("it returns a valid type that can be null", () => {
+      test("it returns an object or null", () => {
         expect(
           getType({ ...baseOptions, type: "TypeScript" })({
             properties: {

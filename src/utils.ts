@@ -1,5 +1,6 @@
 import merge from "deepmerge";
 import { Swagger } from "./models/Swagger";
+import { flow } from "fp-ts/lib/function";
 
 export function doIf<T, V>(
   checkValue: (value: V) => boolean,
@@ -22,3 +23,27 @@ export function patch(swagger: Swagger) {
     );
   };
 }
+
+export function join(separator: string) {
+  return function(array: string[]): string {
+    return array.join(separator);
+  };
+}
+
+export function map<T>(fn: (item: string) => T) {
+  return function(array: string[]): T[] {
+    return array.map(fn);
+  };
+}
+
+export function split(separator: string) {
+  return function(value: string): string[] {
+    return value.split(separator);
+  };
+}
+
+export const toCamelCase = flow(
+  split("-"),
+  map(token => token[0].toUpperCase() + token.slice(1)),
+  join("")
+);

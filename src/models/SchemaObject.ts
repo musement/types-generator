@@ -1,13 +1,45 @@
 import { ReferenceObject } from "./ReferenceObject";
 
-interface BaseObject {
-  description?: string;
-  example?: string;
+export interface StringProperty {
+  type: "string";
+  default?: string;
 }
-
-export interface ArrayObject extends BaseObject {
+export interface EnumProperty {
+  type: "string";
+  enum: string[];
+  default?: string;
+}
+export interface IntegerProperty {
+  type: "integer";
+  default?: number;
+}
+export interface NumberProperty {
+  type: "number";
+  default?: number;
+}
+export interface BooleanProperty {
+  type: "boolean";
+  default?: boolean;
+}
+export interface ArrayProperty {
   type: "array";
   items: SchemaObject | ReferenceObject;
+}
+export interface ObjectProperty {
+  type: "object";
+  properties?: {
+    [key: string]: SchemaObject | ReferenceObject;
+  };
+  required?: string[];
+}
+export interface AllOfProperty {
+  allOf: (SchemaObject | ReferenceObject)[];
+}
+export interface OneOfProperty {
+  oneOf: (SchemaObject | ReferenceObject)[];
+}
+export interface AnyOfProperty {
+  anyOf: (SchemaObject | ReferenceObject)[];
 }
 
 export type SchemaObject = {
@@ -15,41 +47,14 @@ export type SchemaObject = {
   example?: unknown;
   nullable?: boolean;
 } & (
-  | {
-      type: "string";
-      enum?: string[];
-      default?: string;
-    }
-  | {
-      type: "integer";
-      default?: number;
-    }
-  | {
-      type: "number";
-      default?: number;
-    }
-  | {
-      type: "boolean";
-      default?: boolean;
-    }
-  | {
-      type: "array";
-      items: SchemaObject | ReferenceObject;
-    }
-  | {
-      type: "object";
-      properties?: {
-        [key: string]: SchemaObject | ReferenceObject;
-      };
-      required?: string[];
-    }
-  | {
-      allOf: (SchemaObject | ReferenceObject)[];
-    }
-  | {
-      oneOf: (SchemaObject | ReferenceObject)[];
-    }
-  | {
-      anyOf: (SchemaObject | ReferenceObject)[];
-    }
+  | EnumProperty
+  | StringProperty
+  | IntegerProperty
+  | NumberProperty
+  | BooleanProperty
+  | ArrayProperty
+  | ObjectProperty
+  | AllOfProperty
+  | OneOfProperty
+  | AnyOfProperty
 );

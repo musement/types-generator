@@ -7,3 +7,5 @@ export type Swagger = {
     schemas: { [key: string]: SchemaObject | ReferenceObject };
   };
 };
+
+export type Property = SchemaObject | ReferenceObject;
