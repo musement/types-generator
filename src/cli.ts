@@ -1,10 +1,12 @@
 import arg from "arg";
 import inquirer from "inquirer";
+import * as TE from "fp-ts/lib/TaskEither";
 import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { program } from "./program";
 import { CliConfig } from "./models/CliConfig";
+import { tupled } from "fp-ts/lib/function";
 
 function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   const args = arg(
@@ -86,7 +88,7 @@ function getAnswers(
 
 function promptForMissingOptions(
   options: Partial<CliConfig>
-): T.Task<E.Either<Error, CliConfig>> {
+): TE.TaskEither<Error, CliConfig> {
   return pipe(
     options,
     getQuestions,
@@ -96,24 +98,22 @@ function promptForMissingOptions(
   );
 }
 
-function executeProgram({
+function configToProgramParams({
   source,
   destination,
   exitOnInvalidType,
   type,
   patchSource
-}: CliConfig): T.Task<E.Either<Error, void>> {
-  return program(source, destination, { exitOnInvalidType, type }, patchSource);
+}: CliConfig): Parameters<typeof program> {
+  return [source, destination, { exitOnInvalidType, type }, patchSource];
 }
 
-function output(result: T.Task<E.Either<Error, void>>): T.Task<void> {
+function output(result: E.Either<Error, void>): void {
   return pipe(
     result,
-    T.map(
-      E.fold(
-        error => console.error(error),
-        () => console.log("success")
-      )
+    E.fold(
+      error => console.error(error),
+      () => console.log("success")
     )
   );
 }
@@ -123,9 +123,9 @@ function cli(args: string[]): T.Task<void> {
     args,
     parseArgumentsIntoOptions,
     promptForMissingOptions,
-    T.chain(options => E.either.traverse(T.task)(options, executeProgram)),
-    T.map(E.flatten),
-    output
+    TE.map(configToProgramParams),
+    TE.chain(tupled(program)),
+    T.map(output)
   );
 }
 

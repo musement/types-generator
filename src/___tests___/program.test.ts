@@ -1,4 +1,5 @@
 import * as T from "fp-ts/lib/Task";
+import * as TE from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
 import { program } from "../program";
 import { getSwagger } from "../read";
@@ -16,15 +17,13 @@ describe("program", () => {
 
   describe("when everything is running smoothly", () => {
     test("it return a task that writes the file", async () => {
-      const actualGetSwagger = jest.fn(() =>
-        T.of(E.right({ openapi: "3.0.0" }))
-      );
+      const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
       ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.right("generated types"));
       ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
-      const actualWrite = jest.fn(() => T.of(E.right(undefined)));
+      const actualWrite = jest.fn(() => TE.right(undefined));
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program("swagger_url", "filename", {
@@ -57,7 +56,7 @@ describe("program", () => {
       const actualGenerate = jest.fn();
       ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => (): T.Task<E.Either<never, void>> =>
-        T.of(E.right(undefined))
+        TE.right(undefined)
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
@@ -78,15 +77,13 @@ describe("program", () => {
 
   describe("when there's an error generating the type definitions", () => {
     test("it return a task containing the error", async () => {
-      const actualGetSwagger = jest.fn(() =>
-        T.of(E.right({ openapi: "3.0.0" }))
-      );
+      const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
       ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.left(new Error("types error")));
       ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
-      const actualWrite = jest.fn(() => T.of(E.right(undefined)));
+      const actualWrite = jest.fn(() => TE.right(undefined));
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program("swagger_url", "filename", {
@@ -110,9 +107,7 @@ describe("program", () => {
 
   describe("when there's an error writing the file", () => {
     test("it return a task containing the error", async () => {
-      const actualGetSwagger = jest.fn(() =>
-        T.of(E.right({ openapi: "3.0.0" }))
-      );
+      const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
       ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
