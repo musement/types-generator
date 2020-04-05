@@ -658,53 +658,78 @@ describe("getType", () => {
 
 describe("generate", () => {
   describe("when the swagger is valid", () => {
-    test("it returns the type definitios", () => {
-      expect(
-        generate({ ...baseOptions, exitOnInvalidType: false })({
-          openapi: "3.0.0",
-          components: {
-            schemas: {
-              ExceptionResponse: {
-                properties: {
-                  code: {
-                    description: "Error code",
-                    type: "string",
-                    example: "1401"
+    describe('when type is "TypeScript"', () => {
+      test("it returns the type definitios", () => {
+        expect(
+          generate({ ...baseOptions, type: "TypeScript" })({
+            openapi: "3.0.0",
+            components: {
+              schemas: {
+                ExceptionResponse: {
+                  properties: {
+                    code: {
+                      description: "Error code",
+                      type: "string",
+                      example: "1401"
+                    }
                   },
-                  message: {
-                    description: "Error message",
-                    type: "string",
-                    example:
-                      "Full authentication is required to access this resource."
-                  },
-                  data: {
-                    description: "Extra information about the error",
-                    type: "string"
-                  }
+                  type: "object"
                 },
-                type: "object"
-              },
-              FormFieldValue: {
-                properties: {
-                  name: {
-                    type: "string",
-                    example: "firstname"
+                FormFieldValue: {
+                  properties: {
+                    name: {
+                      type: "string",
+                      example: "firstname"
+                    }
                   },
-                  value: {
-                    type: "string",
-                    example: "Linus"
-                  }
-                },
-                type: "object"
+                  type: "object"
+                }
               }
             }
-          }
-        })
-      ).toEqual(
-        right(
-          "export type ExceptionResponse={code?:string,message?:string,data?:string};export type FormFieldValue={name?:string,value?:string}"
-        )
-      );
+          })
+        ).toEqual(
+          right(
+            '"use strict";\nexport type ExceptionResponse={code?:string};export type FormFieldValue={name?:string}'
+          )
+        );
+      });
+    });
+
+    describe('when type is "Flow"', () => {
+      test("it returns the type definitios", () => {
+        expect(
+          generate({ ...baseOptions, type: "Flow" })({
+            openapi: "3.0.0",
+            components: {
+              schemas: {
+                ExceptionResponse: {
+                  properties: {
+                    code: {
+                      description: "Error code",
+                      type: "string",
+                      example: "1401"
+                    }
+                  },
+                  type: "object"
+                },
+                FormFieldValue: {
+                  properties: {
+                    name: {
+                      type: "string",
+                      example: "firstname"
+                    }
+                  },
+                  type: "object"
+                }
+              }
+            }
+          })
+        ).toEqual(
+          right(
+            "// @flow strict\nexport type ExceptionResponse={|code?:string|};export type FormFieldValue={|name?:string|}"
+          )
+        );
+      });
     });
   });
 
@@ -736,7 +761,9 @@ describe("generate", () => {
             }
           }
         })
-      ).toEqual(right("export type ExceptionResponse={code?:string}"));
+      ).toEqual(
+        right('"use strict";\nexport type ExceptionResponse={code?:string}')
+      );
     });
   });
 

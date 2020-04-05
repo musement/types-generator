@@ -217,6 +217,15 @@ function checkOpenApiVersion(swagger: Swagger): E.Either<Error, Swagger> {
     : E.left(new Error(`Version not supported: ${swagger.openapi}`));
 }
 
+function addHeader(options: Options) {
+  return function(content: string): string {
+    return (
+      (options.type === "TypeScript" ? '"use strict";' : "// @flow strict") +
+      `\n${content}`
+    );
+  };
+}
+
 function generate(options: Options) {
   return function(swagger: Swagger): TypeResult {
     return pipe(
@@ -229,7 +238,8 @@ function generate(options: Options) {
           map(prop => `export type ${prop}`),
           join(";")
         )
-      )
+      ),
+      E.map(addHeader(options))
     );
   };
 }
