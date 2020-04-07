@@ -245,19 +245,38 @@ describe("getType", () => {
   });
 
   describe("allOf", () => {
-    test("it returns a value the contains all of the subschemas", () => {
-      expect(
-        getType(baseOptions)({
-          allOf: [
-            {
-              $ref: "#/components/schemas/PostCartItem"
-            },
-            {
-              $ref: "#/components/schemas/PostCart"
-            }
-          ]
-        })
-      ).toEqual(right("PostCartItem&PostCart"));
+    describe("when type is TypeScript", () => {
+      test("it combines the schemas with '&'", () => {
+        expect(
+          getType({ ...baseOptions, type: "TypeScript" })({
+            allOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart"
+              }
+            ]
+          })
+        ).toEqual(right("PostCartItem&PostCart"));
+      });
+    });
+
+    describe("when type is Flow", () => {
+      test("it returns a value destructuring the types", () => {
+        expect(
+          getType({ ...baseOptions, type: "Flow" })({
+            allOf: [
+              {
+                $ref: "#/components/schemas/PostCartItem"
+              },
+              {
+                $ref: "#/components/schemas/PostCart"
+              }
+            ]
+          })
+        ).toEqual(right("{|...PostCartItem,...PostCart|}"));
+      });
     });
 
     describe("when it contains a type", () => {
@@ -311,17 +330,21 @@ describe("getType", () => {
       });
     });
 
-    describe("when it contains invalid types", () => {
-      test("it returns an error with first invalid type", () => {
+    describe("when the subschemas are different from object and $ref", () => {
+      test("it returns an error", () => {
         expect(
           getType(baseOptions)({
             allOf: [
-              { type: "first invalid type" } as never,
-              { type: "second invalid type" } as never
+              { $ref: "#/components/schemas/PostCartItem" },
+              { type: "string" }
             ]
           })
         ).toEqual(
-          left(new Error('Invalid type: {"type":"first invalid type"}'))
+          left(
+            new Error(
+              'Invalid type: {"allOf":[{"$ref":"#/components/schemas/PostCartItem"},{"type":"string"}]}'
+            )
+          )
         );
       });
     });

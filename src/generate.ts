@@ -5,7 +5,7 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
 import { flow, identity } from "fp-ts/lib/function";
-import { join, toCamelCase, map } from "./utils";
+import { join, toCamelCase, map, surround, prefix } from "./utils";
 import {
   isReference,
   isAllOf,
@@ -19,6 +19,7 @@ import {
   isBoolean
 } from "./type-guards";
 import { isString } from "./type-guards";
+import { AllOfProperty } from "./models/SchemaObject";
 
 type TypeResult = E.Either<Error, string>;
 
@@ -110,14 +111,37 @@ function getPropertyHandler<T extends Property>(
   };
 }
 
+const combineAllOfForTypeScript: (array: string[]) => string = join("&");
+const combineAllOfForFlow: (array: string[]) => string = flow(
+  map(prefix("...")),
+  join(","),
+  surround("{|", "|}")
+);
+
+function combineAllOf(options: Options): (array: string[]) => string {
+  return options.type === "TypeScript"
+    ? combineAllOfForTypeScript
+    : combineAllOfForFlow;
+}
+
+function isValidAllOf(property: Property): property is AllOfProperty {
+  return (
+    isAllOf(property) &&
+    property.allOf.every(subprop => isReference(subprop) || isObject(subprop))
+  );
+}
+
 const getTypeRef = getPropertyHandler(
   isReference,
   () => (property): TypeResult => E.right(getReferenceName(property.$ref))
 );
 const getTypeAllOf = getPropertyHandler(
-  isAllOf,
+  isValidAllOf,
   options => (property): TypeResult =>
-    pipe(traverseArray(property.allOf, getType(options)), E.map(join("&")))
+    pipe(
+      traverseArray(property.allOf, getType(options)),
+      E.map(combineAllOf(options))
+    )
 );
 const getTypeOneOf = getPropertyHandler(
   isOneOf,

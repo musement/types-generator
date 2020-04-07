@@ -42,6 +42,25 @@ export function split(separator: string) {
   };
 }
 
+export function prefix(start: string) {
+  return function(value: string): string {
+    return start + value;
+  };
+}
+
+export function suffix(end: string) {
+  return function(value: string): string {
+    return value + end;
+  };
+}
+
+export function surround(
+  start: string,
+  end: string
+): (value: string) => string {
+  return flow(prefix(start), suffix(end));
+}
+
 export const toCamelCase = flow(
   split("-"),
   map(token => token[0].toUpperCase() + token.slice(1)),
