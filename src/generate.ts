@@ -4,8 +4,17 @@ import * as E from "fp-ts/lib/Either";
 import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
-import { flow, identity } from "fp-ts/lib/function";
-import { join, toCamelCase, map, surround, prefix } from "./utils";
+import { flow, identity, constant } from "fp-ts/lib/function";
+import {
+  join,
+  toCamelCase,
+  map,
+  surround,
+  prefix,
+  suffix,
+  doIf,
+  replace
+} from "./utils";
 import {
   isReference,
   isAllOf,
@@ -33,22 +42,23 @@ function getDefinitions(
     : E.left(new Error("There is no definition"));
 }
 
-function getReferenceName(reference: string): string {
-  return pipe(reference.replace("#/components/schemas/", ""), toCamelCase);
+const getReferenceName: (ref: string) => string = flow(
+  replace("#/components/schemas/", ""),
+  toCamelCase
+);
+
+function getExactObject(options: Options): (properties: string[]) => string {
+  return flow(
+    join(","),
+    options.type === "TypeScript" ? surround("{", "}") : surround("{|", "|}")
+  );
 }
 
-function getExactObject(options: Options) {
-  return function(properties: string[]): string {
-    return options.type === "TypeScript"
-      ? `{${properties.join(",")}}`
-      : `{|${properties.join(",")}|}`;
-  };
-}
-
-function concatKeyAndType(key: string, isRequired: boolean) {
-  return function concatType(type: string): string {
-    return `${key}${isRequired ? "" : "?"}:${type}`;
-  };
+function concatKeyAndType(
+  key: string,
+  isRequired: boolean
+): (type: string) => string {
+  return prefix(`${key}${isRequired ? "" : "?"}:`);
 }
 
 function isRequired(
@@ -62,11 +72,14 @@ function getTypeUnknown(options: Options): string {
   return options.type === "TypeScript" ? "unknown" : "mixed";
 }
 
-function makeTypeNullable(property: Property) {
-  return function(type: string): string {
-    return property.nullable ? `(${type}|null)` : type;
-  };
+function isNullable(property: Property): () => boolean {
+  return constant(property.nullable === true);
 }
+
+const makeTypeNullable: (type: string) => string = flow(
+  suffix("|null"),
+  surround("(", ")")
+);
 
 function fixErrorsOnProperty(property: Property): Property {
   if ("allOf" in property && "type" in property) {
@@ -156,14 +169,10 @@ const getTypeAnyOf = getPropertyHandler(
 const getTypeArray = getPropertyHandler(
   isArray,
   options => (property): TypeResult =>
-    pipe(
-      property.items,
-      getType(options),
-      E.map(type => `Array<${type}>`)
-    )
+    pipe(property.items, getType(options), E.map(surround("Array<", ">")))
 );
 const getTypeEnum = getPropertyHandler(isEnum, () => (property): TypeResult =>
-  E.right(property.enum.map(enumValue => `'${enumValue}'`).join("|"))
+  E.right(pipe(property.enum, map(surround("'", "'")), join("|")))
 );
 const getTypeInteger = getPropertyHandler(isInteger, () => (): TypeResult =>
   E.right("number")
@@ -215,7 +224,7 @@ function getType(options: Options) {
         )
       ),
       E.fold(identity, getInvalidType(options)),
-      E.map(makeTypeNullable(property))
+      E.map(doIf(isNullable(property), makeTypeNullable))
     );
   };
 }
@@ -226,10 +235,7 @@ function getTypesFromSchemas(options: Options) {
   }): E.Either<Error, string[]> {
     return pipe(
       traverseArray(Object.entries(schemas), ([key, property]) =>
-        pipe(
-          getType(options)(property),
-          E.map(type => `${toCamelCase(key)}=${type}`)
-        )
+        pipe(getType(options)(property), E.map(prefix(`${toCamelCase(key)}=`)))
       )
     );
   };
@@ -241,13 +247,11 @@ function checkOpenApiVersion(swagger: Swagger): E.Either<Error, Swagger> {
     : E.left(new Error(`Version not supported: ${swagger.openapi}`));
 }
 
-function addHeader(options: Options) {
-  return function(content: string): string {
-    return (
-      (options.type === "TypeScript" ? '"use strict";' : "// @flow strict") +
-      `\n${content}`
-    );
-  };
+function addHeader(options: Options): (content: string) => string {
+  return flow(
+    prefix("\n"),
+    prefix(options.type === "TypeScript" ? '"use strict";' : "// @flow strict")
+  );
 }
 
 function generate(options: Options) {
@@ -257,12 +261,7 @@ function generate(options: Options) {
       checkOpenApiVersion,
       E.chain(getDefinitions),
       E.chain(getTypesFromSchemas(options)),
-      E.map(
-        flow(
-          map(prop => `export type ${prop}`),
-          join(";")
-        )
-      ),
+      E.map(flow(map(prefix("export type ")), join(";"))),
       E.map(addHeader(options))
     );
   };

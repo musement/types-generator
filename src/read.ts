@@ -7,8 +7,8 @@ import * as IE from "fp-ts/lib/IOEither";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Swagger } from "./models/Swagger";
-import { doIf, patch } from "./utils";
-import { identity } from "fp-ts/lib/function";
+import { doIf, patch, doIfElse } from "./utils";
+import { constant } from "fp-ts/lib/function";
 
 function isUrl(pathOrUrl: string): boolean {
   return pathOrUrl.indexOf("https://") !== -1;
@@ -42,7 +42,7 @@ function getContentFromPath<T>(file: string): IE.IOEither<Error, T> {
 function getContent<T>(source: string): TE.TaskEither<Error, T> {
   return pipe(
     source,
-    doIf(
+    doIfElse(
       isUrl,
       source => getContentFromURL<T>(source),
       source => TE.fromIOEither(getContentFromPath<T>(source))
@@ -65,11 +65,7 @@ export function getSwagger(patchSource?: string) {
     return pipe(
       source,
       source => getContent<Swagger>(source),
-      doIf(
-        () => patchSource != null,
-        TE.chain(patchSwagger(patchSource!)),
-        identity
-      )
+      doIf(constant(patchSource != null), TE.chain(patchSwagger(patchSource!)))
     );
   };
 }

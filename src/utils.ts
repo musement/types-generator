@@ -2,13 +2,22 @@ import merge from "deepmerge";
 import { Swagger } from "./models/Swagger";
 import { flow } from "fp-ts/lib/function";
 
-export function doIf<T, V>(
+export function doIfElse<T, V>(
   checkValue: (value: V) => boolean,
   doIfTrue: (value: V) => T,
   doIfFalse: (value: V) => T
 ) {
   return function(value: V): T {
     return checkValue(value) ? doIfTrue(value) : doIfFalse(value);
+  };
+}
+
+export function doIf<T>(
+  checkValue: (value: T) => boolean,
+  doIfTrue: (value: T) => T
+): (value: T) => T {
+  return function(value: T): T {
+    return checkValue(value) ? doIfTrue(value) : value;
   };
 }
 
@@ -59,6 +68,12 @@ export function surround(
   end: string
 ): (value: string) => string {
   return flow(prefix(start), suffix(end));
+}
+
+export function replace(searchValue: string, replaceValue: string) {
+  return function(value: string): string {
+    return value.replace(searchValue, replaceValue);
+  };
 }
 
 export const toCamelCase = flow(
