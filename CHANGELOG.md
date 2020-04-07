@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.3...v0.0.4) (2020-04-07)
+
+
+### Features
+
+* add strict header ([82e9111](https://gitlab.com/musement/experiments/types-generator/commit/82e911193fb784f2a3e1c2cc8ef2c42f3c336ee0))
+
+
+### Bug Fixes
+
+* incorrect allOf property in Flow ([74f60ab](https://gitlab.com/musement/experiments/types-generator/commit/74f60ab23f41fe9681016079919a3bdb09de5f67)), closes [#1](https://gitlab.com/musement/experiments/types-generator/issues/1)
+
 ### [0.0.3](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.2...v0.0.3) (2020-04-01)
 
 

@@ -15,9 +15,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var deepmerge_1 = __importDefault(require("deepmerge"));
-function doIf(checkValue, doIfTrue, doIfFalse) {
+var function_1 = require("fp-ts/lib/function");
+function doIfElse(checkValue, doIfTrue, doIfFalse) {
     return function (value) {
         return checkValue(value) ? doIfTrue(value) : doIfFalse(value);
+    };
+}
+exports.doIfElse = doIfElse;
+function doIf(checkValue, doIfTrue) {
+    return function (value) {
+        return checkValue(value) ? doIfTrue(value) : value;
     };
 }
 exports.doIf = doIf;
@@ -29,3 +36,44 @@ function patch(swagger) {
     };
 }
 exports.patch = patch;
+function join(separator) {
+    return function (array) {
+        return array.join(separator);
+    };
+}
+exports.join = join;
+function map(fn) {
+    return function (array) {
+        return array.map(fn);
+    };
+}
+exports.map = map;
+function split(separator) {
+    return function (value) {
+        return value.split(separator);
+    };
+}
+exports.split = split;
+function prefix(start) {
+    return function (value) {
+        return start + value;
+    };
+}
+exports.prefix = prefix;
+function suffix(end) {
+    return function (value) {
+        return value + end;
+    };
+}
+exports.suffix = suffix;
+function surround(start, end) {
+    return function_1.flow(prefix(start), suffix(end));
+}
+exports.surround = surround;
+function replace(searchValue, replaceValue) {
+    return function (value) {
+        return value.replace(searchValue, replaceValue);
+    };
+}
+exports.replace = replace;
+exports.toCamelCase = function_1.flow(split("-"), map(function (token) { return token[0].toUpperCase() + token.slice(1); }), join(""));

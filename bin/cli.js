@@ -23,10 +23,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var arg_1 = __importDefault(require("arg"));
 var inquirer_1 = __importDefault(require("inquirer"));
+var TE = __importStar(require("fp-ts/lib/TaskEither"));
 var T = __importStar(require("fp-ts/lib/Task"));
 var E = __importStar(require("fp-ts/lib/Either"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
 var program_1 = require("./program");
+var function_1 = require("fp-ts/lib/function");
 function parseArgumentsIntoOptions(rawArgs) {
     var args = arg_1.default({
         "--destination": String,
@@ -94,14 +96,14 @@ function getAnswers(questions) {
 function promptForMissingOptions(options) {
     return pipeable_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
 }
-function executeProgram(_a) {
+function configToProgramParams(_a) {
     var source = _a.source, destination = _a.destination, exitOnInvalidType = _a.exitOnInvalidType, type = _a.type, patchSource = _a.patchSource;
-    return program_1.program(source, destination, { exitOnInvalidType: exitOnInvalidType, type: type }, patchSource);
+    return [source, destination, { exitOnInvalidType: exitOnInvalidType, type: type }, patchSource];
 }
 function output(result) {
-    return pipeable_1.pipe(result, T.map(E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); })));
+    return pipeable_1.pipe(result, E.fold(function (error) { return console.error(error); }, function () { return console.log("success"); }));
 }
 function cli(args) {
-    return pipeable_1.pipe(args, parseArgumentsIntoOptions, promptForMissingOptions, T.chain(function (options) { return E.either.traverse(T.task)(options, executeProgram); }), T.map(E.flatten), output);
+    return pipeable_1.pipe(args, parseArgumentsIntoOptions, promptForMissingOptions, TE.map(configToProgramParams), TE.chain(function_1.tupled(program_1.program)), T.map(output));
 }
 exports.cli = cli;

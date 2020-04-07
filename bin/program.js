@@ -7,23 +7,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var E = __importStar(require("fp-ts/lib/Either"));
-var T = __importStar(require("fp-ts/lib/Task"));
+var TE = __importStar(require("fp-ts/lib/TaskEither"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
 var read_1 = require("./read");
 var generate_1 = require("./generate");
 var write_1 = require("./write");
-function flatGenerate(options) {
-    return T.map(E.chain(generate_1.generate(options)));
-}
-function flatWrite(destination) {
-    return function (eitherString) {
-        return pipeable_1.pipe(eitherString, T.chain(function (eitherString) {
-            return E.either.traverse(T.task)(eitherString, write_1.write(destination));
-        }), T.map(E.flatten));
-    };
-}
 function program(swaggerUrl, destination, options, patchSource) {
-    return pipeable_1.pipe(swaggerUrl, read_1.getSwagger(patchSource), flatGenerate(options), flatWrite(destination));
+    return pipeable_1.pipe(swaggerUrl, read_1.getSwagger(patchSource), TE.chainEitherK(generate_1.generate(options)), TE.chain(write_1.write(destination)));
 }
 exports.program = program;

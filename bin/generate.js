@@ -39,125 +39,127 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var E = __importStar(require("fp-ts/lib/Either"));
 var A = __importStar(require("fp-ts/lib/Array"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
+var function_1 = require("fp-ts/lib/function");
+var utils_1 = require("./utils");
+var type_guards_1 = require("./type-guards");
+var type_guards_2 = require("./type-guards");
+var traverseArray = A.array.traverse(E.either);
 function getDefinitions(swagger) {
     return swagger.components
         ? E.right(swagger.components.schemas)
         : E.left(new Error("There is no definition"));
 }
 exports.getDefinitions = getDefinitions;
-function toCamelCase(key) {
-    return key
-        .split("-")
-        .map(function (token) { return token[0].toUpperCase() + token.slice(1); })
-        .join("");
-}
-function getReferenceName(reference) {
-    return pipeable_1.pipe(reference.replace("#/components/schemas/", ""), toCamelCase);
-}
+var getReferenceName = function_1.flow(utils_1.replace("#/components/schemas/", ""), utils_1.toCamelCase);
 function getExactObject(options) {
-    return function (properties) {
-        return options.type === "TypeScript"
-            ? "{" + properties.join(",") + "}"
-            : "{|" + properties.join(",") + "|}";
-    };
+    return function_1.flow(utils_1.join(","), options.type === "TypeScript" ? utils_1.surround("{", "}") : utils_1.surround("{|", "|}"));
 }
 function concatKeyAndType(key, isRequired) {
-    return function concatType(type) {
-        return "" + key + (isRequired ? "" : "?") + ":" + type;
-    };
+    return utils_1.prefix("" + key + (isRequired ? "" : "?") + ":");
 }
 function isRequired(key, requiredFields) {
     return requiredFields != null && requiredFields.indexOf(key) !== -1;
 }
-function getTypeObject(options) {
-    return function (_a) {
-        var properties = _a.properties, required = _a.required;
-        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(properties || {}), function (_a) {
-            var key = _a[0], property = _a[1];
-            return pipeable_1.pipe(property, getType(options), E.map(concatKeyAndType(key, isRequired(key, required))));
-        }), E.map(getExactObject(options)));
-    };
-}
 function getTypeUnknown(options) {
     return options.type === "TypeScript" ? "unknown" : "mixed";
 }
-function getTypeNullable(property) {
-    return function (type) {
-        return property.nullable ? "(" + type + "|null)" : type;
-    };
+function isNullable(property) {
+    return function_1.constant(property.nullable === true);
 }
+var makeTypeNullable = function_1.flow(utils_1.suffix("|null"), utils_1.surround("(", ")"));
 function fixErrorsOnProperty(property) {
     if ("allOf" in property && "type" in property) {
         var allOf = property.allOf, otherProperties = __rest(property, ["allOf"]);
         return {
-            allOf: __spreadArrays(allOf, [
-                __assign({}, otherProperties)
-            ])
+            allOf: __spreadArrays(allOf, [__assign({}, otherProperties)])
         };
     }
     if ("oneOf" in property && "type" in property) {
         var oneOf = property.oneOf, otherProperties = __rest(property, ["oneOf"]);
         return {
-            oneOf: __spreadArrays(oneOf, [
-                __assign({}, otherProperties)
-            ])
+            oneOf: __spreadArrays(oneOf, [__assign({}, otherProperties)])
         };
     }
     if ("anyOf" in property && "type" in property) {
         var anyOf = property.anyOf, otherProperties = __rest(property, ["anyOf"]);
         return {
-            anyOf: __spreadArrays(anyOf, [
-                __assign({}, otherProperties)
-            ])
+            anyOf: __spreadArrays(anyOf, [__assign({}, otherProperties)])
         };
     }
     return property;
 }
+function getInvalidType(options) {
+    return function (property) {
+        return options.exitOnInvalidType
+            ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
+            : E.right(getTypeUnknown(options));
+    };
+}
+function getPropertyHandler(isT, handleT) {
+    return function (options) {
+        return function (property) {
+            return isT(property)
+                ? E.left(handleT(options)(property))
+                : E.right(property);
+        };
+    };
+}
+var combineAllOfForTypeScript = utils_1.join("&");
+var combineAllOfForFlow = function_1.flow(utils_1.map(utils_1.prefix("...")), utils_1.join(","), utils_1.surround("{|", "|}"));
+function combineAllOf(options) {
+    return options.type === "TypeScript"
+        ? combineAllOfForTypeScript
+        : combineAllOfForFlow;
+}
+function isValidAllOf(property) {
+    return (type_guards_1.isAllOf(property) &&
+        property.allOf.every(function (subprop) { return type_guards_1.isReference(subprop) || type_guards_1.isObject(subprop); }));
+}
+var getTypeRef = getPropertyHandler(type_guards_1.isReference, function () { return function (property) { return E.right(getReferenceName(property.$ref)); }; });
+var getTypeAllOf = getPropertyHandler(isValidAllOf, function (options) { return function (property) {
+    return pipeable_1.pipe(traverseArray(property.allOf, getType(options)), E.map(combineAllOf(options)));
+}; });
+var getTypeOneOf = getPropertyHandler(type_guards_1.isOneOf, function (options) { return function (property) {
+    return pipeable_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(utils_1.join("|")));
+}; });
+var getTypeAnyOf = getPropertyHandler(type_guards_1.isAnyOf, function (options) { return function (property) {
+    return pipeable_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(utils_1.join("|")));
+}; });
+var getTypeArray = getPropertyHandler(type_guards_1.isArray, function (options) { return function (property) {
+    return pipeable_1.pipe(property.items, getType(options), E.map(utils_1.surround("Array<", ">")));
+}; });
+var getTypeEnum = getPropertyHandler(type_guards_1.isEnum, function () { return function (property) {
+    return E.right(pipeable_1.pipe(property.enum, utils_1.map(utils_1.surround("'", "'")), utils_1.join("|")));
+}; });
+var getTypeInteger = getPropertyHandler(type_guards_1.isInteger, function () { return function () {
+    return E.right("number");
+}; });
+var getTypeNumber = getPropertyHandler(type_guards_1.isNumber, function () { return function () {
+    return E.right("number");
+}; });
+var getTypeString = getPropertyHandler(type_guards_2.isString, function () { return function () {
+    return E.right("string");
+}; });
+var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function () { return function () {
+    return E.right("boolean");
+}; });
+var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) { return function (property) {
+    return pipeable_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
+        var key = _a[0], childProperty = _a[1];
+        return pipeable_1.pipe(childProperty, getType(options), E.map(concatKeyAndType(key, isRequired(key, property.required))));
+    }), E.map(getExactObject(options)));
+}; });
 function getType(options) {
     return function (property) {
-        return pipeable_1.pipe(property, fixErrorsOnProperty, function (property) {
-            if ("$ref" in property) {
-                return E.right(pipeable_1.pipe(getReferenceName(property.$ref), getTypeNullable(property)));
-            }
-            if ("allOf" in property && property.allOf) {
-                return pipeable_1.pipe(A.array.traverse(E.either)(property.allOf, getType(options)), E.map(function (types) { return types.join("&"); }), E.map(getTypeNullable(property)));
-            }
-            if ("anyOf" in property && property.anyOf) {
-                return pipeable_1.pipe(A.array.traverse(E.either)(property.anyOf, getType(options)), E.map(function (types) { return types.join("|"); }), E.map(getTypeNullable(property)));
-            }
-            if ("oneOf" in property && property.oneOf) {
-                return pipeable_1.pipe(A.array.traverse(E.either)(property.oneOf, getType(options)), E.map(function (types) { return types.join("|"); }), E.map(getTypeNullable(property)));
-            }
-            if ("type" in property) {
-                if (property.type === "array") {
-                    return pipeable_1.pipe(property.items, getType(options), E.map(function (type) { return "Array<" + type + ">"; }), E.map(getTypeNullable(property)));
-                }
-                if (property.type === "string" && property.enum) {
-                    return E.right(pipeable_1.pipe(property.enum.map(function (enumValue) { return "'" + enumValue + "'"; }).join("|"), getTypeNullable(property)));
-                }
-                if (["boolean", "number", "null", "string"].indexOf(property.type) !== -1) {
-                    return E.right(pipeable_1.pipe(property.type, getTypeNullable(property)));
-                }
-                if (property.type === "integer") {
-                    return E.right(pipeable_1.pipe("number", getTypeNullable(property)));
-                }
-                if (property.type === "object") {
-                    var properties = property.properties, required = property.required;
-                    return pipeable_1.pipe({ properties: properties, required: required }, getTypeObject(options), E.map(getTypeNullable(property)));
-                }
-            }
-            return options.exitOnInvalidType
-                ? E.left(new Error("Invalid type: " + JSON.stringify(property)))
-                : E.right(getTypeUnknown(options));
-        });
+        return pipeable_1.pipe(property, fixErrorsOnProperty, function_1.flow(getTypeRef(options), E.chain(getTypeAllOf(options)), E.chain(getTypeAnyOf(options)), E.chain(getTypeOneOf(options)), E.chain(getTypeArray(options)), E.chain(getTypeObject(options)), function_1.flow(E.chain(getTypeEnum(options)), E.chain(getTypeNumber(options)), E.chain(getTypeString(options)), E.chain(getTypeBoolean(options)), E.chain(getTypeInteger(options)))), E.fold(function_1.identity, getInvalidType(options)), E.map(utils_1.doIf(isNullable(property), makeTypeNullable)));
     };
 }
 exports.getType = getType;
 function getTypesFromSchemas(options) {
     return function (schemas) {
-        return pipeable_1.pipe(A.array.traverse(E.either)(Object.entries(schemas), function (_a) {
+        return pipeable_1.pipe(traverseArray(Object.entries(schemas), function (_a) {
             var key = _a[0], property = _a[1];
-            return pipeable_1.pipe(getType(options)(property), E.map(function (type) { return toCamelCase(key) + "=" + type; }));
+            return pipeable_1.pipe(getType(options)(property), E.map(utils_1.prefix(utils_1.toCamelCase(key) + "=")));
         }));
     };
 }
@@ -166,11 +168,12 @@ function checkOpenApiVersion(swagger) {
         ? E.right(swagger)
         : E.left(new Error("Version not supported: " + swagger.openapi));
 }
+function addHeader(options) {
+    return function_1.flow(utils_1.prefix("\n"), utils_1.prefix(options.type === "TypeScript" ? '"use strict";' : "// @flow strict"));
+}
 function generate(options) {
     return function (swagger) {
-        return pipeable_1.pipe(swagger, checkOpenApiVersion, E.chain(getDefinitions), E.chain(getTypesFromSchemas(options)), E.map(function (properties) {
-            return properties.map(function (prop) { return "export type " + prop; }).join(";");
-        }));
+        return pipeable_1.pipe(swagger, checkOpenApiVersion, E.chain(getDefinitions), E.chain(getTypesFromSchemas(options)), E.map(function_1.flow(utils_1.map(utils_1.prefix("export type ")), utils_1.join(";"))), E.map(addHeader(options)));
     };
 }
 exports.generate = generate;
