@@ -123,22 +123,46 @@ info:
   });
 
   describe('when "patchSource" is given', () => {
-    test("it returns a task that calls axios and applied a patch to the data", async () => {
+    describe('when "patchSource" is a string', () => {
+      test("it returns a task that calls axios and applied a patch to the data", async () => {
+        ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
+          data: { components: { schemas: { Property: { type: "string" } } } }
+        });
+        ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
+          data: { Property: { type: "object" } }
+        });
+        const task = getSwagger(left("https://patch"))("https://swagger");
+        const swagger = await task();
+        expect(axios).toHaveBeenNthCalledWith(1, {
+          method: "get",
+          url: "https://swagger"
+        });
+        expect(axios).toHaveBeenNthCalledWith(2, {
+          method: "get",
+          url: "https://patch"
+        });
+        expect(swagger).toEqual(
+          right({ components: { schemas: { Property: { type: "object" } } } })
+        );
+      });
+    });
+  });
+
+  describe('when "patchSource" is an object', () => {
+    test("it applies the patch to the data", async () => {
       ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
         data: { components: { schemas: { Property: { type: "string" } } } }
       });
-      ((axios as unknown) as jest.Mock).mockResolvedValueOnce({
-        data: { Property: { type: "object" } }
-      });
-      const task = getSwagger("https://patch")("https://swagger");
+      const task = getSwagger(right({ Property: { type: "object" } }))(
+        "https://swagger"
+      );
+
       const swagger = await task();
+
+      expect(axios).toHaveBeenCalledTimes(1);
       expect(axios).toHaveBeenNthCalledWith(1, {
         method: "get",
         url: "https://swagger"
-      });
-      expect(axios).toHaveBeenNthCalledWith(2, {
-        method: "get",
-        url: "https://patch"
       });
       expect(swagger).toEqual(
         right({ components: { schemas: { Property: { type: "object" } } } })

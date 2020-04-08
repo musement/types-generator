@@ -5,8 +5,9 @@ import fs from "fs";
 import path from "path";
 import * as IE from "fp-ts/lib/IOEither";
 import * as TE from "fp-ts/lib/TaskEither";
+import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
-import { Swagger } from "./models/Swagger";
+import { Swagger, Schemas } from "./models/Swagger";
 import { doIf, patch, doIfElse } from "./utils";
 import { constant } from "fp-ts/lib/function";
 
@@ -50,17 +51,17 @@ function getContent<T>(source: string): TE.TaskEither<Error, T> {
   );
 }
 
-function patchSwagger(patchSource: string) {
+function patchSwagger(patchSource: E.Either<string, Partial<Schemas>>) {
   return function(swagger: Swagger): TE.TaskEither<Error, Swagger> {
     return pipe(
       patchSource,
-      source => getContent<Partial<Swagger>>(source),
+      E.fold(source => getContent<Partial<Swagger>>(source), TE.right),
       TE.map(patch(swagger))
     );
   };
 }
 
-export function getSwagger(patchSource?: string) {
+export function getSwagger(patchSource?: E.Either<string, Partial<Schemas>>) {
   return function(source: string): TE.TaskEither<Error, Swagger> {
     return pipe(
       source,

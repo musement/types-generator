@@ -146,4 +146,50 @@ describe("program", () => {
       expect(result).toEqual(E.left(new Error("write error")));
     });
   });
+
+  describe("when patchSource is a string", () => {
+    test("it calls getSwagger with left(strings)", async () => {
+      const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
+      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+        actualGetSwagger
+      );
+      const actualGenerate = jest.fn(() => E.right("generated types"));
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(() => TE.right(undefined));
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
+        exitOnInvalidType: true,
+        type: "Flow",
+        patchSource: "urlOrPath"
+      });
+      await task();
+
+      expect(getSwagger).toHaveBeenCalledWith(E.left("urlOrPath"));
+    });
+  });
+
+  describe("when patchSource is an object", () => {
+    test("it calls getSwagger with right(object)", async () => {
+      const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
+      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+        actualGetSwagger
+      );
+      const actualGenerate = jest.fn(() => E.right("generated types"));
+      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(() => TE.right(undefined));
+      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
+        exitOnInvalidType: true,
+        type: "Flow",
+        patchSource: {}
+      });
+      await task();
+
+      expect(getSwagger).toHaveBeenCalledWith(E.right({}));
+    });
+  });
 });
