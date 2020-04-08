@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.4...v0.0.5) (2020-04-08)
+
+
+### Features
+
+* build as library ([cb3399a](https://gitlab.com/musement/experiments/types-generator/commit/cb3399a7050c4f9a04a1c9f053cb1c5d04f79475)), closes [#4](https://gitlab.com/musement/experiments/types-generator/issues/4)
+
 ### [0.0.4](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.3...v0.0.4) (2020-04-07)
 
 

@@ -1,0 +1,14 @@
+import { Property } from "./models/Swagger";
+import { StringProperty, AllOfProperty, OneOfProperty, AnyOfProperty, ArrayProperty, NumberProperty, BooleanProperty, EnumProperty, ObjectProperty } from "./models/SchemaObject";
+import { ReferenceObject } from "./models/ReferenceObject";
+export declare function isReference(property: Property): property is ReferenceObject;
+export declare function isAllOf(property: Property): property is AllOfProperty;
+export declare function isOneOf(property: Property): property is OneOfProperty;
+export declare function isAnyOf(property: Property): property is AnyOfProperty;
+export declare function isArray(property: Property): property is ArrayProperty;
+export declare function isEnum(property: Property): property is EnumProperty;
+export declare function isString(property: Property): property is StringProperty;
+export declare function isBoolean(property: Property): property is BooleanProperty;
+export declare function isNumber(property: Property): property is NumberProperty;
+export declare function isInteger(property: Property): property is NumberProperty;
+export declare function isObject(property: Property): property is ObjectProperty;
