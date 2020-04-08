@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.5...v0.0.6) (2020-04-08)
+
+
+### Features
+
+* swagger's patch as an object ([6ae1bb6](https://gitlab.com/musement/experiments/types-generator/commit/6ae1bb6fa28bbb47ccd47f3ec0726200a83867c8))
+
 ### [0.0.5](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.4...v0.0.5) (2020-04-08)
 
 

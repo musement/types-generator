@@ -17,6 +17,7 @@ var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
 var IE = __importStar(require("fp-ts/lib/IOEither"));
 var TE = __importStar(require("fp-ts/lib/TaskEither"));
+var E = __importStar(require("fp-ts/lib/Either"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
 var utils_1 = require("./utils");
 var function_1 = require("fp-ts/lib/function");
@@ -46,7 +47,7 @@ function getContent(source) {
 }
 function patchSwagger(patchSource) {
     return function (swagger) {
-        return pipeable_1.pipe(patchSource, function (source) { return getContent(source); }, TE.map(utils_1.patch(swagger)));
+        return pipeable_1.pipe(patchSource, E.fold(function (source) { return getContent(source); }, TE.right), TE.map(utils_1.patch(swagger)));
     };
 }
 function getSwagger(patchSource) {
