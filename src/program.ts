@@ -3,18 +3,19 @@ import { pipe } from "fp-ts/lib/pipeable";
 import { getSwagger } from "./read";
 import { generate } from "./generate";
 import { write } from "./write";
-import { Options } from "./models/Options";
+import { CliConfig } from "./models/CliConfig";
 
-export function program(
-  swaggerUrl: string,
-  destination: string,
-  options: Options,
-  patchSource?: string
-): TE.TaskEither<Error, void> {
+export function program({
+  source,
+  destination,
+  exitOnInvalidType,
+  type,
+  patchSource
+}: CliConfig): TE.TaskEither<Error, void> {
   return pipe(
-    swaggerUrl,
+    source,
     getSwagger(patchSource),
-    TE.chainEitherK(generate(options)),
+    TE.chainEitherK(generate({ exitOnInvalidType, type })),
     TE.chain(write(destination))
   );
 }

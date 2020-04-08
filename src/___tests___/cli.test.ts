@@ -1,7 +1,7 @@
 import { prompt } from "inquirer";
 import { cli } from "../cli";
-import { program } from "../program";
 import { Either } from "fp-ts/lib/Either";
+import * as E from "fp-ts/lib/Either";
 
 jest.mock("../program", () => ({
   program: jest.fn(() => (): Promise<Either<Error, void>> =>
@@ -9,8 +9,6 @@ jest.mock("../program", () => ({
   )
 }));
 jest.mock("inquirer", () => ({ prompt: jest.fn(() => Promise.resolve({})) }));
-console.error = jest.fn();
-console.log = jest.fn();
 
 describe("cli", () => {
   afterEach(() => {
@@ -19,39 +17,8 @@ describe("cli", () => {
   });
 
   describe("when all options are given", () => {
-    test("it returns a task that executes the program", async () => {
-      await cli([
-        "node",
-        "generate-types",
-        "--source",
-        "swagger_url",
-        "--destination",
-        "filename.d.ts",
-        "--exitOnInvalidType",
-        "--type",
-        "TypeScript",
-        "--patchSource",
-        "patch_source"
-      ])();
-      expect(console.log).toHaveBeenCalledWith("success");
-      expect(prompt).toHaveBeenCalledTimes(1);
-      expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith(
-        "swagger_url",
-        "filename.d.ts",
-        {
-          exitOnInvalidType: true,
-          type: "TypeScript"
-        },
-        "patch_source"
-      );
-    });
-
-    describe("when the program returns an error", () => {
-      test("it returns a task that writes the error to the console", async () => {
-        ((program as unknown) as jest.Mock).mockReturnValue(() =>
-          Promise.resolve({ _tag: "Left", left: new Error("program error") })
-        );
+    test("it returns the config object", async () => {
+      expect(
         await cli([
           "node",
           "generate-types",
@@ -59,11 +26,21 @@ describe("cli", () => {
           "swagger_url",
           "--destination",
           "filename.d.ts",
+          "--exitOnInvalidType",
           "--type",
-          "TypeScript"
-        ])();
-        expect(console.error).toHaveBeenCalledWith(new Error("program error"));
-      });
+          "TypeScript",
+          "--patchSource",
+          "patch_source"
+        ])()
+      ).toEqual(
+        E.right({
+          destination: "filename.d.ts",
+          source: "swagger_url",
+          exitOnInvalidType: true,
+          type: "TypeScript",
+          patchSource: "patch_source"
+        })
+      );
     });
   });
 
@@ -89,47 +66,45 @@ describe("cli", () => {
     });
 
     describe("when user types a valid source", () => {
-      test("it returns a task that executes the program", async () => {
+      test("it returns a config with the typed source", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           source: "swagger_url"
         });
-        await cli([
-          "node",
-          "generate-types",
-          "--destination",
-          "filename.d.ts",
-          "--exitOnInvalidType",
-          "--type",
-          "Flow"
-        ])();
-        expect(program).toHaveBeenCalledWith(
-          "swagger_url",
-          "filename.d.ts",
-          {
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--destination",
+            "filename.d.ts",
+            "--exitOnInvalidType",
+            "--type",
+            "Flow"
+          ])()
+        ).toEqual(
+          E.right({
+            destination: "filename.d.ts",
+            source: "swagger_url",
             exitOnInvalidType: true,
             type: "Flow"
-          },
-          undefined
+          })
         );
       });
     });
 
     describe("when user types an empty source", () => {
-      test("it returns a task that returns an error", async () => {
+      test("it returns an error", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           source: ""
         });
-        await cli([
-          "node",
-          "generate-types",
-          "--destination",
-          "filename.d.ts",
-          "--exitOnInvalidType"
-        ])();
-        expect(program).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith(
-          new Error("Source is missing")
-        );
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--destination",
+            "filename.d.ts",
+            "--exitOnInvalidType"
+          ])()
+        ).toEqual(E.left(new Error("Source is missing")));
       });
     });
   });
@@ -156,27 +131,27 @@ describe("cli", () => {
     });
 
     describe("when user types a valid destination", () => {
-      test("it returns a task that executes the program", async () => {
+      test("it returns a config with the typed destination", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           destination: "filename.d.ts"
         });
-        await cli([
-          "node",
-          "generate-types",
-          "--source",
-          "swagger_url",
-          "--exitOnInvalidType",
-          "--type",
-          "TypeScript"
-        ])();
-        expect(program).toHaveBeenCalledWith(
-          "swagger_url",
-          "filename.d.ts",
-          {
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--exitOnInvalidType",
+            "--type",
+            "TypeScript"
+          ])()
+        ).toEqual(
+          E.right({
+            destination: "filename.d.ts",
+            source: "swagger_url",
             exitOnInvalidType: true,
             type: "TypeScript"
-          },
-          undefined
+          })
         );
       });
     });
@@ -186,17 +161,15 @@ describe("cli", () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           destination: ""
         });
-        await cli([
-          "node",
-          "generate-types",
-          "--source",
-          "swagger_url",
-          "--exitOnInvalidType"
-        ])();
-        expect(program).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith(
-          new Error("Destination is missing")
-        );
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--exitOnInvalidType"
+          ])()
+        ).toEqual(E.left(new Error("Destination is missing")));
       });
     });
   });
@@ -225,76 +198,72 @@ describe("cli", () => {
     });
 
     describe("when user types a valid type", () => {
-      test("it returns a task that executes the program", async () => {
+      test("it returns a config with the typed type", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           type: "TypeScript"
         });
-        await cli([
-          "node",
-          "generate-types",
-          "--source",
-          "swagger_url",
-          "--destination",
-          "filename.d.ts",
-          "--exitOnInvalidType"
-        ])();
-        expect(program).toHaveBeenCalledWith(
-          "swagger_url",
-          "filename.d.ts",
-          {
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--destination",
+            "filename.d.ts",
+            "--exitOnInvalidType"
+          ])()
+        ).toEqual(
+          E.right({
+            destination: "filename.d.ts",
+            source: "swagger_url",
             exitOnInvalidType: true,
             type: "TypeScript"
-          },
-          undefined
+          })
         );
       });
     });
 
     describe("when user types an empty type", () => {
-      test("it returns a task that returns an error", async () => {
+      test("it returns an error", async () => {
         ((prompt as unknown) as jest.Mock).mockResolvedValue({
           type: ""
         });
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--destination",
+            "core.3.4.0.d.ts",
+            "--exitOnInvalidType"
+          ])()
+        ).toEqual(E.left(new Error("Type is missing")));
+      });
+    });
+  });
+
+  describe("when --exitOnInvalidType is missing", () => {
+    test("it sets exitOnInvalidType=false", async () => {
+      ((prompt as unknown) as jest.Mock).mockResolvedValue({});
+      expect(
         await cli([
           "node",
           "generate-types",
           "--source",
           "swagger_url",
           "--destination",
-          "core.3.4.0.d.ts",
-          "--exitOnInvalidType"
-        ])();
-        expect(program).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith(
-          new Error("Type is missing")
-        );
-      });
-    });
-  });
-
-  describe("when --exitOnInvalidType is missing", () => {
-    test("it calls 'program' with exitOnInvalidType=false", async () => {
-      ((prompt as unknown) as jest.Mock).mockResolvedValue({});
-      await cli([
-        "node",
-        "generate-types",
-        "--source",
-        "swagger_url",
-        "--destination",
-        "filename.d.ts",
-        "--type",
-        "TypeScript"
-      ])();
-      expect(prompt).toHaveBeenCalledTimes(1);
-      expect(prompt).toHaveBeenCalledWith([]);
-      expect(program).toHaveBeenCalledWith(
-        "swagger_url",
-        "filename.d.ts",
-        {
+          "filename.d.ts",
+          "--type",
+          "TypeScript"
+        ])()
+      ).toEqual(
+        E.right({
+          destination: "filename.d.ts",
+          source: "swagger_url",
           exitOnInvalidType: false,
           type: "TypeScript"
-        },
-        undefined
+        })
       );
     });
   });

@@ -26,9 +26,12 @@ describe("program", () => {
       const actualWrite = jest.fn(() => TE.right(undefined));
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", {
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
+        patchSource: undefined
       });
       const result = await task();
 
@@ -60,9 +63,12 @@ describe("program", () => {
       );
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", {
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
+        patchSource: undefined
       });
       const result = await task();
 
@@ -86,9 +92,12 @@ describe("program", () => {
       const actualWrite = jest.fn(() => TE.right(undefined));
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", {
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
+        patchSource: undefined
       });
       const result = await task();
 
@@ -116,9 +125,12 @@ describe("program", () => {
       const actualWrite = jest.fn(() => T.of(E.left(new Error("write error"))));
       ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
 
-      const task = program("swagger_url", "filename", {
+      const task = program({
+        source: "swagger_url",
+        destination: "filename",
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
+        patchSource: undefined
       });
       const result = await task();
 

@@ -2,12 +2,14 @@
   "name": "@musement/types-generator",
   "version": "0.0.4",
   "description": "A CLI to generate types definitions for flow and typescript",
-  "main": "dist/index.js",
+  "main": "dist/lib/index.js",
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --watch --coverage",
     "build": "tsc -p .",
     "build:watch": "tsc -p . --watch",
+    "build:lib": "tsc -p ./tsconfig-lib.json --declaration",
+    "build:lib:watch": "tsc -p ./tsconfig-lib.json  --declaration--watch",
     "lint": "eslint src --ext .ts",
     "typescript:check": "tsc -p . --noEmit",
     "release": "npm run test && standard-version -a"
@@ -73,8 +75,8 @@
   },
   "standard-version": {
     "scripts": {
-      "prerelease": "npm run build",
-      "precommit": "git add bin"
+      "prerelease": "npm run build && npm run build:lib",
+      "precommit": "git add bin dist"
     }
   },
   "husky": {

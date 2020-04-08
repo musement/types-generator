@@ -4,9 +4,7 @@ import * as TE from "fp-ts/lib/TaskEither";
 import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
-import { program } from "./program";
 import { CliConfig } from "./models/CliConfig";
-import { tupled } from "fp-ts/lib/function";
 
 function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   const args = arg(
@@ -98,35 +96,8 @@ function promptForMissingOptions(
   );
 }
 
-function configToProgramParams({
-  source,
-  destination,
-  exitOnInvalidType,
-  type,
-  patchSource
-}: CliConfig): Parameters<typeof program> {
-  return [source, destination, { exitOnInvalidType, type }, patchSource];
-}
-
-function output(result: E.Either<Error, void>): void {
-  return pipe(
-    result,
-    E.fold(
-      error => console.error(error),
-      () => console.log("success")
-    )
-  );
-}
-
-function cli(args: string[]): T.Task<void> {
-  return pipe(
-    args,
-    parseArgumentsIntoOptions,
-    promptForMissingOptions,
-    TE.map(configToProgramParams),
-    TE.chain(tupled(program)),
-    T.map(output)
-  );
+function cli(args: string[]): TE.TaskEither<Error, CliConfig> {
+  return pipe(args, parseArgumentsIntoOptions, promptForMissingOptions);
 }
 
 export { cli };
