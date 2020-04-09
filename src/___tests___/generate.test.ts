@@ -529,11 +529,14 @@ describe("getType", () => {
                   age: { type: "number" },
                   address: { type: "string" }
                 }
-              }
+              },
+              1: { type: "string" }
             },
             type: "object"
           })
-        ).toEqual(right("{names?:string,data?:{age?:number,address?:string}}"));
+        ).toEqual(
+          right("{1?:string,names?:string,data?:{age?:number,address?:string}}")
+        );
       });
     });
 
@@ -549,12 +552,15 @@ describe("getType", () => {
                   age: { type: "number" },
                   address: { type: "string" }
                 }
-              }
+              },
+              1: { type: "string" }
             },
             type: "object"
           })
         ).toEqual(
-          right("{|names?:string,data?:{|age?:number,address?:string|}|}")
+          right(
+            '{|"1"?:string,names?:string,data?:{|age?:number,address?:string|}|}'
+          )
         );
       });
     });

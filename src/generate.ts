@@ -4,7 +4,7 @@ import * as E from "fp-ts/lib/Either";
 import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
-import { flow, identity, constant } from "fp-ts/lib/function";
+import { flow, identity, constant, not } from "fp-ts/lib/function";
 import {
   join,
   toCamelCase,
@@ -54,11 +54,21 @@ function getExactObject(options: Options): (properties: string[]) => string {
   );
 }
 
+const escapeKey = surround('"', '"');
+const isNumberKey = flow(parseInt, not(isNaN));
+
 function concatKeyAndType(
   key: string,
-  isRequired: boolean
+  isRequired: boolean,
+  options: Options
 ): (type: string) => string {
-  return prefix(`${key}${isRequired ? "" : "?"}:`);
+  return pipe(
+    key,
+    doIf(constant(options.type === "Flow" && isNumberKey(key)), escapeKey),
+    doIf(not(constant(isRequired)), suffix("?")),
+    suffix(":"),
+    prefix
+  );
 }
 
 function isRequired(
@@ -196,7 +206,9 @@ const getTypeObject = getPropertyHandler(
           pipe(
             childProperty,
             getType(options),
-            E.map(concatKeyAndType(key, isRequired(key, property.required)))
+            E.map(
+              concatKeyAndType(key, isRequired(key, property.required), options)
+            )
           )
       ),
       E.map(getExactObject(options))
