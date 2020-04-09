@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.6...v0.0.7) (2020-04-09)
+
+
+### Bug Fixes
+
+* in Flow numbers cannot be keys ([79c8329](https://gitlab.com/musement/experiments/types-generator/commit/79c8329a240b18f649b9a29e17cc7cd32ab2eeea)), closes [#5](https://gitlab.com/musement/experiments/types-generator/issues/5)
+
 ### [0.0.6](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.5...v0.0.6) (2020-04-08)
 
 

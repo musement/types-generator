@@ -54,8 +54,10 @@ var getReferenceName = function_1.flow(utils_1.replace("#/components/schemas/", 
 function getExactObject(options) {
     return function_1.flow(utils_1.join(","), options.type === "TypeScript" ? utils_1.surround("{", "}") : utils_1.surround("{|", "|}"));
 }
-function concatKeyAndType(key, isRequired) {
-    return utils_1.prefix("" + key + (isRequired ? "" : "?") + ":");
+var escapeKey = utils_1.surround('"', '"');
+var isNumberKey = function_1.flow(parseInt, function_1.not(isNaN));
+function concatKeyAndType(key, isRequired, options) {
+    return pipeable_1.pipe(key, utils_1.doIf(function_1.constant(options.type === "Flow" && isNumberKey(key)), escapeKey), utils_1.doIf(function_1.not(function_1.constant(isRequired)), utils_1.suffix("?")), utils_1.suffix(":"), utils_1.prefix);
 }
 function isRequired(key, requiredFields) {
     return requiredFields != null && requiredFields.indexOf(key) !== -1;
@@ -146,7 +148,7 @@ var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function () { r
 var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) { return function (property) {
     return pipeable_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
         var key = _a[0], childProperty = _a[1];
-        return pipeable_1.pipe(childProperty, getType(options), E.map(concatKeyAndType(key, isRequired(key, property.required))));
+        return pipeable_1.pipe(childProperty, getType(options), E.map(concatKeyAndType(key, isRequired(key, property.required), options)));
     }), E.map(getExactObject(options)));
 }; });
 function getType(options) {
