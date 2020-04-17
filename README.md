@@ -1,19 +1,19 @@
 # Types Generator
 
-Types generator is a Typescript project that allows to generate types for Typescript or Flow starting from a Swagger/OpenAPI documents.
+Types generator is a Typescript project that allows to generate types for Typescript or Flow starting from a Swagger/OpenAPI document.
 
 ## Getting Started
 
-Install Types generator using [`yarn`](https://yarnpkg.com/en/package):
+Install Types generator using [`npm`](https://www.npmjs.com/):
 
 ```bash
-yarn add --dev types-generator
+npm install --save-dev git+ssh://git@gitlab.com:musement/experiments/types-generator.git
 ```
 
-Or [`npm`](https://www.npmjs.com/):
+Or [`yarn`](https://yarnpkg.com/en/package):
 
 ```bash
-npm install --save-dev types-generator
+yarn add --dev git+ssh://git@gitlab.com:musement/experiments/types-generator.git
 ```
 
 Add the following section to your package.json:
@@ -28,7 +28,17 @@ Finally, run yarn generate-types or npm run generate-types
 
 ## Running from command line
 
-You can run type generator directly from the CLI (if it's globally available in your PATH, e.g. by yarn global add types-generator or npm install types-generator --global)
+You can run type generator directly from the CLI if it's globally available in your PATH.
+
+```bash
+npm install -g git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+```
+
+Or [`yarn`](https://yarnpkg.com/en/package):
+
+```bash
+yarn global add git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+```
 
 Here's how to run types generator:
 
@@ -36,7 +46,7 @@ Here's how to run types generator:
 generate-types -s https://swagger -t Flow
 ```
 
-## Type generator CLI options
+### Type generator CLI options
 
 ```
 "--destination", "-d": local path where the generated file should be placed,
@@ -49,6 +59,9 @@ generate-types -s https://swagger -t Flow
 ```
 ```
 "--exitOnInvalidType", "-e": block the execution of the programs if there are errors on the swagger,
+```
+```
+"--patchSource", "-e":  url or path of the patch. The patch is a file whose content is merged with the swagger
 ```
 
 
@@ -68,7 +81,8 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/musement/experiments/types-generator/-/tags).
+
 
 ## Authors
 
