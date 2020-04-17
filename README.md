@@ -83,20 +83,17 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/musement/experiments/types-generator/-/tags).
 
+## Using the issue tracker
+
+The issue tracker is the preferred channel for `bug reports` and `features requests`.
 
 ## Authors
 
 * **Marco Ziliani** - *Initial work* - [GitHub](https://github.com/zi)
 * **Michele Dinoia** - *Initial work* - [GitHub](https://github.com/dinoiam)
 
-<!-- See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project. -->
+See also the list of [contributors](https://gitlab.com/musement/experiments/types-generator/-/graphs/master) who participated in this project.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE.md) file for details
-<!-- 
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc -->
