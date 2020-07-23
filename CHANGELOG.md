@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.7...v0.0.8) (2020-07-23)
+
+
+### Bug Fixes
+
+* convert property names to camelCase ([4486710](https://gitlab.com/musement/experiments/types-generator/commit/4486710f7272ac7cb0c93bba9cf83c79d6034dba))
+
 ### [0.0.7](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.6...v0.0.7) (2020-04-09)
 
 

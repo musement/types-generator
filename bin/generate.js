@@ -50,7 +50,7 @@ function getDefinitions(swagger) {
         : E.left(new Error("There is no definition"));
 }
 exports.getDefinitions = getDefinitions;
-var getReferenceName = function_1.flow(utils_1.replace("#/components/schemas/", ""), utils_1.toCamelCase);
+var getReferenceName = function_1.flow(utils_1.replace("#/components/schemas/", ""), utils_1.toPascalCase);
 function getExactObject(options) {
     return function_1.flow(utils_1.join(","), options.type === "TypeScript" ? utils_1.surround("{", "}") : utils_1.surround("{|", "|}"));
 }
@@ -148,7 +148,7 @@ var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function () { r
 var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) { return function (property) {
     return pipeable_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
         var key = _a[0], childProperty = _a[1];
-        return pipeable_1.pipe(childProperty, getType(options), E.map(concatKeyAndType(key, isRequired(key, property.required), options)));
+        return pipeable_1.pipe(childProperty, getType(options), E.map(concatKeyAndType(utils_1.toCamelCase(key), isRequired(key, property.required), options)));
     }), E.map(getExactObject(options)));
 }; });
 function getType(options) {
@@ -161,7 +161,7 @@ function getTypesFromSchemas(options) {
     return function (schemas) {
         return pipeable_1.pipe(traverseArray(Object.entries(schemas), function (_a) {
             var key = _a[0], property = _a[1];
-            return pipeable_1.pipe(getType(options)(property), E.map(utils_1.prefix(utils_1.toCamelCase(key) + "=")));
+            return pipeable_1.pipe(getType(options)(property), E.map(utils_1.prefix(utils_1.toPascalCase(key) + "=")));
         }));
     };
 }
