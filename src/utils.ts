@@ -39,7 +39,7 @@ export function join(separator: string) {
   };
 }
 
-export function map<T>(fn: (item: string) => T) {
+export function map<T>(fn: (item: string, index: number) => T) {
   return function(array: string[]): T[] {
     return array.map(fn);
   };
@@ -77,6 +77,14 @@ export function replace(searchValue: string, replaceValue: string) {
 }
 
 export const toCamelCase = flow(
+  split("-"),
+  map((token, index) =>
+    index === 0 ? token : token[0].toUpperCase() + token.slice(1)
+  ),
+  join("")
+);
+
+export const toPascalCase = flow(
   split("-"),
   map(token => token[0].toUpperCase() + token.slice(1)),
   join("")

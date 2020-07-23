@@ -8,6 +8,7 @@ import { flow, identity, constant, not } from "fp-ts/lib/function";
 import {
   join,
   toCamelCase,
+  toPascalCase,
   map,
   surround,
   prefix,
@@ -44,7 +45,7 @@ function getDefinitions(
 
 const getReferenceName: (ref: string) => string = flow(
   replace("#/components/schemas/", ""),
-  toCamelCase
+  toPascalCase
 );
 
 function getExactObject(options: Options): (properties: string[]) => string {
@@ -207,7 +208,11 @@ const getTypeObject = getPropertyHandler(
             childProperty,
             getType(options),
             E.map(
-              concatKeyAndType(key, isRequired(key, property.required), options)
+              concatKeyAndType(
+                toCamelCase(key),
+                isRequired(key, property.required),
+                options
+              )
             )
           )
       ),
@@ -247,7 +252,7 @@ function getTypesFromSchemas(options: Options) {
   }): E.Either<Error, string[]> {
     return pipe(
       traverseArray(Object.entries(schemas), ([key, property]) =>
-        pipe(getType(options)(property), E.map(prefix(`${toCamelCase(key)}=`)))
+        pipe(getType(options)(property), E.map(prefix(`${toPascalCase(key)}=`)))
       )
     );
   };

@@ -796,6 +796,45 @@ describe("generate", () => {
     });
   });
 
+  describe("when a property contains '-'", () => {
+    test("it converts the name to camelCase", () => {
+      expect(
+        generate(baseOptions)({
+          openapi: "3.0.0",
+          components: {
+            schemas: {
+              response: {
+                properties: {
+                  type: {
+                    description:
+                      "Bulk type useful for apply proper validations",
+                    type: "string",
+                    enum: [
+                      "timeslot",
+                      "daily",
+                      "open-max-days",
+                      "open-end-date"
+                    ]
+                  },
+                  "tag-name": {
+                    description: "Name to identify a bulk",
+                    type: "string",
+                    nullable: true
+                  }
+                },
+                type: "object"
+              }
+            }
+          }
+        })
+      ).toEqual(
+        right(
+          "\"use strict\";\nexport type Response={type?:'timeslot'|'daily'|'open-max-days'|'open-end-date',tagName?:(string|null)}"
+        )
+      );
+    });
+  });
+
   describe("when 'getDefinitions' returns an error", () => {
     test("it returns the error", () => {
       expect(
