@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDefinitions, getType, generate } from "../generate";
 import { right, left } from "fp-ts/lib/Either";
+import { typeScriptGenerator } from "../generators/typescriptGenerator";
+import { flowGenerator } from "../generators/flowGenerator";
 import { Options } from "../models/Options";
 
 const baseOptions: Options = { exitOnInvalidType: true, type: "TypeScript" };
+const optionsTypeScript = {
+  exitOnInvalidType: true,
+  generator: typeScriptGenerator
+};
+const optionsFlow = {
+  exitOnInvalidType: true,
+  generator: flowGenerator
+};
 
 describe("getDefinitions", () => {
   describe("when the swagger contains the schemas", () => {
@@ -104,33 +114,58 @@ describe("getDefinitions", () => {
 
 describe("getType", () => {
   describe("string", () => {
-    test("it returns 'string'", () => {
-      expect(getType(baseOptions)({ type: "string" })).toEqual(right("string"));
+    describe("typescript", () => {
+      test("it returns 'string'", () => {
+        expect(getType(optionsTypeScript)({ type: "string" })).toEqual(
+          right("string")
+        );
+      });
+    });
+
+    describe("flow", () => {
+      test("it returns 'string'", () => {
+        expect(getType(optionsFlow)({ type: "string" })).toEqual(
+          right("string")
+        );
+      });
     });
 
     describe("when the property is nullable", () => {
       test("it returns 'string' or null", () => {
         expect(
-          getType(baseOptions)({ type: "string", nullable: true })
+          getType(optionsTypeScript)({ type: "string", nullable: true })
         ).toEqual(right("(string|null)"));
       });
     });
   });
 
   describe("string with enum", () => {
-    test("it returns the possible values", () => {
-      expect(
-        getType(baseOptions)({
-          type: "string",
-          enum: ["text", "date", "number"]
-        })
-      ).toEqual(right("'text'|'date'|'number'"));
+    describe("typescript", () => {
+      test("it returns the possible values", () => {
+        expect(
+          getType(optionsTypeScript)({
+            type: "string",
+            enum: ["text", "date", "number"]
+          })
+        ).toEqual(right("'text'|'date'|'number'"));
+      });
+    });
+
+    describe("flow", () => {
+      test("it returns the possible values", () => {
+        expect(
+          getType(optionsFlow)({
+            type: "string",
+            enum: ["text", "date", "number"]
+          })
+        ).toEqual(right("'text'|'date'|'number'"));
+      });
     });
 
     describe("when the property is nullable", () => {
       test("it returns the possible values or null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             type: "string",
             enum: ["text", "date", "number"],
             nullable: true
@@ -142,7 +177,7 @@ describe("getType", () => {
 
   describe("boolean", () => {
     test("it returns boolean", () => {
-      expect(getType(baseOptions)({ type: "boolean" })).toEqual(
+      expect(getType(optionsTypeScript)({ type: "boolean" })).toEqual(
         right("boolean")
       );
     });
@@ -150,20 +185,23 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns boolean or null", () => {
         expect(
-          getType(baseOptions)({ type: "boolean", nullable: true })
+          getType(optionsTypeScript)({ type: "boolean", nullable: true })
         ).toEqual(right("(boolean|null)"));
       });
     });
   });
+
   describe("number", () => {
     test("it returns number", () => {
-      expect(getType(baseOptions)({ type: "number" })).toEqual(right("number"));
+      expect(getType(optionsTypeScript)({ type: "number" })).toEqual(
+        right("number")
+      );
     });
 
     describe("when the property is nullable", () => {
       test("it returns number or null", () => {
         expect(
-          getType(baseOptions)({ type: "number", nullable: true })
+          getType(optionsTypeScript)({ type: "number", nullable: true })
         ).toEqual(right("(number|null)"));
       });
     });
@@ -171,7 +209,7 @@ describe("getType", () => {
 
   describe("integer", () => {
     test("it returns integer", () => {
-      expect(getType(baseOptions)({ type: "integer" })).toEqual(
+      expect(getType(optionsTypeScript)({ type: "integer" })).toEqual(
         right("number")
       );
     });
@@ -179,7 +217,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns integer or null", () => {
         expect(
-          getType(baseOptions)({ type: "integer", nullable: true })
+          getType(optionsTypeScript)({ type: "integer", nullable: true })
         ).toEqual(right("(number|null)"));
       });
     });
@@ -188,7 +226,7 @@ describe("getType", () => {
   describe("reference", () => {
     test("it returns the referenced type", () => {
       expect(
-        getType(baseOptions)({
+        getType(optionsTypeScript)({
           $ref: "#/components/schemas/ExtraCustomerDataField"
         })
       ).toEqual(right("ExtraCustomerDataField"));
@@ -197,7 +235,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns the referenced type or null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             $ref: "#/components/schemas/ExtraCustomerDataField",
             nullable: true
           })
@@ -208,7 +246,7 @@ describe("getType", () => {
     describe("when the reference name contains '-'", () => {
       test("it converts the name to PascalCase", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             $ref: "#/components/schemas/extra-customer-data-field"
           })
         ).toEqual(right("ExtraCustomerDataField"));
@@ -219,7 +257,7 @@ describe("getType", () => {
   describe("array", () => {
     test("it returns array", () => {
       expect(
-        getType(baseOptions)({
+        getType(optionsTypeScript)({
           type: "array",
           items: {
             $ref: "#/components/schemas/FormFieldDefinition"
@@ -231,7 +269,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns array or null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             type: "array",
             items: {
               $ref: "#/components/schemas/FormFieldDefinition",
@@ -248,7 +286,7 @@ describe("getType", () => {
     describe("when type is TypeScript", () => {
       test("it combines the schemas with '&'", () => {
         expect(
-          getType({ ...baseOptions, type: "TypeScript" })({
+          getType(optionsTypeScript)({
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -265,7 +303,7 @@ describe("getType", () => {
     describe("when type is Flow", () => {
       test("it returns a value destructuring the types", () => {
         expect(
-          getType({ ...baseOptions, type: "Flow" })({
+          getType(optionsFlow)({
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -282,7 +320,7 @@ describe("getType", () => {
     describe("when it contains a type", () => {
       test("it consider the type as part of 'allOf'", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -300,7 +338,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns a valid type that can be null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -314,7 +352,7 @@ describe("getType", () => {
           })
         ).toEqual(right("(PostCartItem&(PostCart|null)|null)"));
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             allOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -333,7 +371,7 @@ describe("getType", () => {
     describe("when the subschemas are different from object and $ref", () => {
       test("it returns an error", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             allOf: [
               { $ref: "#/components/schemas/PostCartItem" },
               { type: "string" }
@@ -353,7 +391,7 @@ describe("getType", () => {
   describe("anyOf", () => {
     test("it returns a value the contains any of the subschemas", () => {
       expect(
-        getType(baseOptions)({
+        getType(optionsTypeScript)({
           anyOf: [
             {
               $ref: "#/components/schemas/PostCartItem"
@@ -369,7 +407,7 @@ describe("getType", () => {
     describe("when it contains a type", () => {
       test("it consider the type as part of 'anyOf'", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             anyOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -387,7 +425,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns a valid type that can be null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             anyOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -401,7 +439,7 @@ describe("getType", () => {
           })
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             anyOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -420,7 +458,7 @@ describe("getType", () => {
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             anyOf: [
               { type: "first invalid type" } as never,
               { type: "second invalid type" } as never
@@ -436,7 +474,7 @@ describe("getType", () => {
   describe("oneOf", () => {
     test("it returns a value the contains one of the subschemas", () => {
       expect(
-        getType(baseOptions)({
+        getType(optionsTypeScript)({
           oneOf: [
             {
               $ref: "#/components/schemas/PostCartItem"
@@ -452,7 +490,7 @@ describe("getType", () => {
     describe("when it contains a type", () => {
       test("it consider the type as part of 'oneOf'", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             oneOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -470,7 +508,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns a valid type that can be null", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             oneOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -484,7 +522,7 @@ describe("getType", () => {
           })
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             oneOf: [
               {
                 $ref: "#/components/schemas/PostCartItem"
@@ -503,7 +541,7 @@ describe("getType", () => {
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             oneOf: [
               { type: "first invalid type" } as never,
               { type: "second invalid type" } as never
@@ -520,7 +558,7 @@ describe("getType", () => {
     describe('when options.type === "TypeScript"', () => {
       test("it returns an object with its properties", () => {
         expect(
-          getType({ ...baseOptions, type: "TypeScript" })({
+          getType(optionsTypeScript)({
             properties: {
               names: { type: "string" },
               data: {
@@ -543,7 +581,7 @@ describe("getType", () => {
     describe('when options.type === "Flow"', () => {
       test("it returns an exact object", () => {
         expect(
-          getType({ ...baseOptions, type: "Flow" })({
+          getType(optionsFlow)({
             properties: {
               names: { type: "string" },
               data: {
@@ -568,7 +606,7 @@ describe("getType", () => {
     describe("when the property is nullable", () => {
       test("it returns an object or null", () => {
         expect(
-          getType({ ...baseOptions, type: "TypeScript" })({
+          getType(optionsTypeScript)({
             properties: {
               names: { type: "string", nullable: true },
               data: {
@@ -593,7 +631,7 @@ describe("getType", () => {
     describe("when the property has required fields", () => {
       test("it returns a valid type", () => {
         expect(
-          getType({ ...baseOptions, type: "TypeScript" })({
+          getType(optionsTypeScript)({
             properties: {
               names: { type: "string" },
               addresses: { type: "string" },
@@ -619,14 +657,16 @@ describe("getType", () => {
 
     describe("when it doesn't contain 'properties'", () => {
       test("it returns an empty object", () => {
-        expect(getType(baseOptions)({ type: "object" })).toEqual(right("{}"));
+        expect(getType(optionsTypeScript)({ type: "object" })).toEqual(
+          right("{}")
+        );
       });
     });
 
     describe("when it contains invalid types", () => {
       test("it returns an error with first invalid type", () => {
         expect(
-          getType(baseOptions)({
+          getType(optionsTypeScript)({
             properties: {
               code: { type: "string" },
               message: { type: "first invalid type" as never },
@@ -644,10 +684,10 @@ describe("getType", () => {
   describe("invalid type", () => {
     describe("when exitOnInvalidType is true", () => {
       test("it returns an error", () => {
-        expect(getType(baseOptions)({ type: "invalid" } as never)).toEqual(
-          left(new Error('Invalid type: {"type":"invalid"}'))
-        );
-        expect(getType(baseOptions)({} as never)).toEqual(
+        expect(
+          getType(optionsTypeScript)({ type: "invalid" } as never)
+        ).toEqual(left(new Error('Invalid type: {"type":"invalid"}')));
+        expect(getType(optionsTypeScript)({} as never)).toEqual(
           left(new Error("Invalid type: {}"))
         );
       });
@@ -658,9 +698,8 @@ describe("getType", () => {
         test("it returns 'unknown'", () => {
           expect(
             getType({
-              ...baseOptions,
-              exitOnInvalidType: false,
-              type: "TypeScript"
+              ...optionsTypeScript,
+              exitOnInvalidType: false
             })({
               type: "invalid"
             } as never)
@@ -672,9 +711,9 @@ describe("getType", () => {
         test("it returns 'mixed'", () => {
           expect(
             getType({
-              ...baseOptions,
+              ...optionsTypeScript,
               exitOnInvalidType: false,
-              type: "Flow"
+              generator: flowGenerator
             })({
               type: "invalid"
             } as never)
