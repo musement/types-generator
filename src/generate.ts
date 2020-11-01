@@ -5,7 +5,7 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
 import { flow, identity, constant } from "fp-ts/lib/function";
-import { doIf, replace } from "./utils";
+import { doIf, replace } from "./services/utils";
 import {
   isReference,
   isAllOf,

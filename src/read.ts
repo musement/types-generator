@@ -8,7 +8,7 @@ import * as TE from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Swagger, Schemas } from "./models/Swagger";
-import { doIf, patch, doIfElse } from "./utils";
+import { doIf, patch, doIfElse } from "./services/utils";
 import { constant } from "fp-ts/lib/function";
 
 function isUrl(pathOrUrl: string): boolean {

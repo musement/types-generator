@@ -10,7 +10,7 @@ import {
   surround,
   toCamelCase,
   toPascalCase
-} from "../utils";
+} from "../services/utils";
 
 export const typeScriptGenerator: Generator = {
   getTypeString: () => "string",

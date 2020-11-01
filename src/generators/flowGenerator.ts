@@ -10,7 +10,7 @@ import {
   surround,
   toCamelCase,
   toPascalCase
-} from "../utils";
+} from "../services/utils";
 
 const isNumberKey = flow(parseInt, not(isNaN));
 

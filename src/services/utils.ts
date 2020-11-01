@@ -1,5 +1,5 @@
 import merge from "deepmerge";
-import { Swagger } from "./models/Swagger";
+import { Swagger } from "../models/Swagger";
 import { flow } from "fp-ts/lib/function";
 
 export function doIfElse<T, V>(
