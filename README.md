@@ -55,7 +55,7 @@ generate-types -s https://swagger -t Flow
 "--source", "-s": url to the swagger or path to the file,
 ```
 ```
-"--type", "-t": "Flow" or "Typescript",
+"--type", "-t": "Flow", "Typescript" or "CodecIoTs",
 ```
 ```
 "--exitOnInvalidType", "-e": block the execution of the programs if there are errors on the swagger,

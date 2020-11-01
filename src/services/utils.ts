@@ -39,6 +39,12 @@ export function join(separator: string) {
   };
 }
 
+export function reduce<T, K>(fn: (reduced: K, item: T) => K, initialValue: K) {
+  return function(array: T[]): K {
+    return array.reduce(fn, initialValue);
+  };
+}
+
 export function map<T>(fn: (item: string, index: number) => T) {
   return function(array: string[]): T[] {
     return array.map(fn);

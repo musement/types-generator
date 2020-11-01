@@ -1,4 +1,4 @@
 export interface Options {
   exitOnInvalidType: boolean;
-  type: "Flow" | "TypeScript";
+  type: "Flow" | "TypeScript" | "CodecIoTs";
 }

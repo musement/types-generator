@@ -4,6 +4,7 @@ import { right, left } from "fp-ts/lib/Either";
 import { typeScriptGenerator } from "../generators/typescriptGenerator";
 import { flowGenerator } from "../generators/flowGenerator";
 import { Options } from "../models/Options";
+import { codecGenerator } from "../generators/codecGenerator";
 
 const baseOptions: Options = { exitOnInvalidType: true, type: "TypeScript" };
 const optionsTypeScript = {
@@ -13,6 +14,10 @@ const optionsTypeScript = {
 const optionsFlow = {
   exitOnInvalidType: true,
   generator: flowGenerator
+};
+const optionsCodecIoTs = {
+  exitOnInvalidType: true,
+  generator: codecGenerator
 };
 
 describe("getDefinitions", () => {
@@ -120,6 +125,14 @@ describe("getType", () => {
           right("string")
         );
       });
+
+      describe("when the property is nullable", () => {
+        test("it returns 'string' or null", () => {
+          expect(
+            getType(optionsTypeScript)({ type: "string", nullable: true })
+          ).toEqual(right("(string|null)"));
+        });
+      });
     });
 
     describe("flow", () => {
@@ -128,13 +141,29 @@ describe("getType", () => {
           right("string")
         );
       });
+
+      describe("when the property is nullable", () => {
+        test("it returns 'string' or null", () => {
+          expect(
+            getType(optionsFlow)({ type: "string", nullable: true })
+          ).toEqual(right("(string|null)"));
+        });
+      });
     });
 
-    describe("when the property is nullable", () => {
-      test("it returns 'string' or null", () => {
-        expect(
-          getType(optionsTypeScript)({ type: "string", nullable: true })
-        ).toEqual(right("(string|null)"));
+    describe("codecIoTs", () => {
+      test("it returns 'string'", () => {
+        expect(getType(optionsCodecIoTs)({ type: "string" })).toEqual(
+          right("t.string")
+        );
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns 'string' or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({ type: "string", nullable: true })
+          ).toEqual(right("t.union([t.string,t.null])"));
+        });
       });
     });
   });
@@ -149,6 +178,18 @@ describe("getType", () => {
           })
         ).toEqual(right("'text'|'date'|'number'"));
       });
+
+      describe("when the property is nullable", () => {
+        test("it returns the possible values or null", () => {
+          expect(
+            getType(optionsTypeScript)({
+              type: "string",
+              enum: ["text", "date", "number"],
+              nullable: true
+            })
+          ).toEqual(right("('text'|'date'|'number'|null)"));
+        });
+      });
     });
 
     describe("flow", () => {
@@ -160,17 +201,59 @@ describe("getType", () => {
           })
         ).toEqual(right("'text'|'date'|'number'"));
       });
+
+      describe("when the property is nullable", () => {
+        test("it returns the possible values or null", () => {
+          expect(
+            getType(optionsFlow)({
+              type: "string",
+              enum: ["text", "date", "number"],
+              nullable: true
+            })
+          ).toEqual(right("('text'|'date'|'number'|null)"));
+        });
+      });
     });
 
-    describe("when the property is nullable", () => {
-      test("it returns the possible values or null", () => {
+    describe("codecIoTs", () => {
+      test("it returns the possible values", () => {
         expect(
-          getType(optionsTypeScript)({
+          getType(optionsCodecIoTs)({
             type: "string",
-            enum: ["text", "date", "number"],
-            nullable: true
+            enum: ["text", "date", "number"]
           })
-        ).toEqual(right("('text'|'date'|'number'|null)"));
+        ).toEqual(
+          right(
+            "t.union([t.literal('text'),t.literal('date'),t.literal('number')])"
+          )
+        );
+      });
+
+      describe("when there only one value", () => {
+        test("it returns only the value", () => {
+          expect(
+            getType(optionsCodecIoTs)({
+              type: "string",
+              enum: ["text"]
+            })
+          ).toEqual(right("t.literal('text')"));
+        });
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns the possible values or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({
+              type: "string",
+              enum: ["text", "date", "number"],
+              nullable: true
+            })
+          ).toEqual(
+            right(
+              "t.union([t.union([t.literal('text'),t.literal('date'),t.literal('number')]),t.null])"
+            )
+          );
+        });
       });
     });
   });
@@ -189,6 +272,22 @@ describe("getType", () => {
         ).toEqual(right("(boolean|null)"));
       });
     });
+
+    describe("codecIoTs", () => {
+      test("it returns boolean", () => {
+        expect(getType(optionsCodecIoTs)({ type: "boolean" })).toEqual(
+          right("t.boolean")
+        );
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns boolean or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({ type: "boolean", nullable: true })
+          ).toEqual(right("t.union([t.boolean,t.null])"));
+        });
+      });
+    });
   });
 
   describe("number", () => {
@@ -205,6 +304,22 @@ describe("getType", () => {
         ).toEqual(right("(number|null)"));
       });
     });
+
+    describe("codecIoTs", () => {
+      test("it returns number", () => {
+        expect(getType(optionsCodecIoTs)({ type: "number" })).toEqual(
+          right("t.number")
+        );
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns number or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({ type: "number", nullable: true })
+          ).toEqual(right("t.union([t.number,t.null])"));
+        });
+      });
+    });
   });
 
   describe("integer", () => {
@@ -219,6 +334,22 @@ describe("getType", () => {
         expect(
           getType(optionsTypeScript)({ type: "integer", nullable: true })
         ).toEqual(right("(number|null)"));
+      });
+    });
+
+    describe("codecIoTs", () => {
+      test("it returns integer", () => {
+        expect(getType(optionsCodecIoTs)({ type: "integer" })).toEqual(
+          right("t.number")
+        );
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns integer or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({ type: "integer", nullable: true })
+          ).toEqual(right("t.union([t.number,t.null])"));
+        });
       });
     });
   });
@@ -252,6 +383,37 @@ describe("getType", () => {
         ).toEqual(right("ExtraCustomerDataField"));
       });
     });
+
+    describe("codecIoTs", () => {
+      test("it returns the referenced type", () => {
+        expect(
+          getType(optionsTypeScript)({
+            $ref: "#/components/schemas/ExtraCustomerDataField"
+          })
+        ).toEqual(right("ExtraCustomerDataField"));
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns the referenced type or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({
+              $ref: "#/components/schemas/ExtraCustomerDataField",
+              nullable: true
+            })
+          ).toEqual(right("t.union([ExtraCustomerDataField,t.null])"));
+        });
+      });
+
+      describe("when the reference name contains '-'", () => {
+        test("it converts the name to PascalCase", () => {
+          expect(
+            getType(optionsCodecIoTs)({
+              $ref: "#/components/schemas/extra-customer-data-field"
+            })
+          ).toEqual(right("ExtraCustomerDataField"));
+        });
+      });
+    });
   });
 
   describe("array", () => {
@@ -278,6 +440,38 @@ describe("getType", () => {
             nullable: true
           })
         ).toEqual(right("(Array<(FormFieldDefinition|null)>|null)"));
+      });
+    });
+
+    describe("codecIoTs", () => {
+      test("it returns array", () => {
+        expect(
+          getType(optionsCodecIoTs)({
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/FormFieldDefinition"
+            }
+          })
+        ).toEqual(right("t.array(FormFieldDefinition)"));
+      });
+
+      describe("when the property is nullable", () => {
+        test("it returns array or null", () => {
+          expect(
+            getType(optionsCodecIoTs)({
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/FormFieldDefinition",
+                nullable: true
+              },
+              nullable: true
+            })
+          ).toEqual(
+            right(
+              "t.union([t.array(t.union([FormFieldDefinition,t.null])),t.null])"
+            )
+          );
+        });
       });
     });
   });
@@ -726,78 +920,21 @@ describe("getType", () => {
 
 describe("generate", () => {
   describe("when the swagger is valid", () => {
-    describe('when type is "TypeScript"', () => {
-      test("it returns the type definitios", () => {
-        expect(
-          generate({ ...baseOptions, type: "TypeScript" })({
-            openapi: "3.0.0",
-            components: {
-              schemas: {
-                ExceptionResponse: {
-                  properties: {
-                    code: {
-                      description: "Error code",
-                      type: "string",
-                      example: "1401"
-                    }
-                  },
-                  type: "object"
-                },
-                FormFieldValue: {
-                  properties: {
-                    name: {
-                      type: "string",
-                      example: "firstname"
-                    }
-                  },
-                  type: "object"
-                }
-              }
-            }
-          })
-        ).toEqual(
-          right(
-            '"use strict";\nexport type ExceptionResponse={code?:string};export type FormFieldValue={name?:string}'
-          )
-        );
-      });
-    });
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const swagger = require("./__mocks__/openapi.json");
 
-    describe('when type is "Flow"', () => {
-      test("it returns the type definitios", () => {
-        expect(
-          generate({ ...baseOptions, type: "Flow" })({
-            openapi: "3.0.0",
-            components: {
-              schemas: {
-                ExceptionResponse: {
-                  properties: {
-                    code: {
-                      description: "Error code",
-                      type: "string",
-                      example: "1401"
-                    }
-                  },
-                  type: "object"
-                },
-                FormFieldValue: {
-                  properties: {
-                    name: {
-                      type: "string",
-                      example: "firstname"
-                    }
-                  },
-                  type: "object"
-                }
-              }
-            }
-          })
-        ).toEqual(
-          right(
-            "// @flow strict\nexport type ExceptionResponse={|code?:string|};export type FormFieldValue={|name?:string|}"
-          )
-        );
-      });
+    test("it matches the snapshot", () => {
+      expect(
+        generate({ exitOnInvalidType: false, type: "TypeScript" })(swagger)
+      ).toMatchSnapshot();
+
+      expect(
+        generate({ exitOnInvalidType: false, type: "Flow" })(swagger)
+      ).toMatchSnapshot();
+
+      expect(
+        generate({ exitOnInvalidType: false, type: "CodecIoTs" })(swagger)
+      ).toMatchSnapshot();
     });
   });
 

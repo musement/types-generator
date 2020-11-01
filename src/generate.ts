@@ -24,11 +24,12 @@ import { Generator } from "./models/Generator";
 import { typeScriptGenerator } from "./generators/typescriptGenerator";
 import { flowGenerator } from "./generators/flowGenerator";
 import { codecGenerator } from "./generators/codecGenerator";
+import { doIfElse } from "./services/utils";
 
 type TypeResult = E.Either<Error, string>;
 interface GenerateOptions {
   exitOnInvalidType: boolean;
-  generator: Generator;
+  generator: Generator<unknown>;
 }
 
 const traverseArray = A.array.traverse(E.either);
@@ -158,7 +159,7 @@ const getTypeEnum = getPropertyHandler(
 );
 const getTypeInteger = getPropertyHandler(
   isInteger,
-  ({ generator }) => (): TypeResult => E.right(generator.getTypeNumber())
+  ({ generator }) => (): TypeResult => E.right(generator.getTypeInteger())
 );
 const getTypeNumber = getPropertyHandler(
   isNumber,
@@ -247,26 +248,54 @@ function getGenerateOptions({
 }: Options): GenerateOptions {
   return {
     exitOnInvalidType,
-    generator:
-      type === "TypeScript"
-        ? typeScriptGenerator
-        : type === "Flow"
-        ? flowGenerator
-        : codecGenerator
+    generator: {
+      TypeScript: typeScriptGenerator,
+      Flow: flowGenerator,
+      CodecIoTs: codecGenerator
+    }[type] as Generator<unknown>
   };
 }
 
-function generate(options: Options) {
-  return function(swagger: Swagger): E.Either<Error, string> {
+function schemasToString(
+  options: GenerateOptions
+): (schemas: { [key: string]: Property }) => E.Either<Error, string> {
+  return flow(
+    getTypesFromSchemas(options),
+    E.map(options.generator.combineTypes)
+  );
+}
+
+function schemasToStringForCodecs(
+  options: GenerateOptions
+): (schemas: { [key: string]: Property }) => E.Either<Error, string> {
+  return (schemas): E.Either<Error, string> => {
     return pipe(
-      swagger,
-      checkOpenApiVersion,
-      E.chain(getDefinitions),
-      E.chain(getTypesFromSchemas(getGenerateOptions(options))),
-      E.map(getGenerateOptions(options).generator.combineTypes),
-      E.map(getGenerateOptions(options).generator.addHeader)
+      [
+        schemasToString({
+          ...options,
+          generator: typeScriptGenerator as Generator<unknown>
+        })(schemas),
+        schemasToString(options)(schemas)
+      ],
+      A.array.sequence(E.either),
+      E.map(values => values.join(";"))
     );
   };
+}
+
+function generate(
+  options: Options
+): (swagger: Swagger) => E.Either<Error, string> {
+  return flow(
+    checkOpenApiVersion,
+    E.chain(getDefinitions),
+    doIfElse(
+      constant(options.type === "CodecIoTs"),
+      E.chain(schemasToStringForCodecs(getGenerateOptions(options))),
+      E.chain(schemasToString(getGenerateOptions(options)))
+    ),
+    E.map(getGenerateOptions(options).generator.addHeader)
+  );
 }
 
 export { getDefinitions, getType, generate };
