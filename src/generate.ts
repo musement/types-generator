@@ -5,7 +5,7 @@ import * as A from "fp-ts/lib/Array";
 import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
 import { flow, identity, constant } from "fp-ts/lib/function";
-import { doIf, replace } from "./services/utils";
+import { doIf, prefix, replace } from "./services/utils";
 import {
   isReference,
   isAllOf,
@@ -24,15 +24,18 @@ import { Generator } from "./models/Generator";
 import { typeScriptGenerator } from "./generators/typescriptGenerator";
 import { flowGenerator } from "./generators/flowGenerator";
 import { codecGenerator } from "./generators/codecGenerator";
-import { doIfElse } from "./services/utils";
 
 type TypeResult = E.Either<Error, string>;
-interface GenerateOptions {
-  exitOnInvalidType: boolean;
-  generator: Generator<unknown>;
-}
 
 const traverseArray = A.array.traverse(E.either);
+
+function getGenerator({ type }: Options): Generator<unknown> {
+  return {
+    TypeScript: typeScriptGenerator,
+    Flow: flowGenerator,
+    CodecIoTs: codecGenerator
+  }[type] as Generator<unknown>;
+}
 
 function getDefinitions(
   swagger: Swagger
@@ -42,10 +45,10 @@ function getDefinitions(
     : E.left(new Error("There is no definition"));
 }
 
-function getReferenceName(options: GenerateOptions): (ref: string) => string {
+function getReferenceName(options: Options): (ref: string) => string {
   return flow(
     replace("#/components/schemas/", ""),
-    options.generator.getTypeReference
+    getGenerator(options).getTypeReference
   );
 }
 
@@ -85,19 +88,19 @@ function fixErrorsOnProperty(property: Property): Property {
   return property;
 }
 
-function getInvalidType({ generator, exitOnInvalidType }: GenerateOptions) {
+function getInvalidType(options: Options) {
   return function(property: Property): TypeResult {
-    return exitOnInvalidType
+    return options.exitOnInvalidType
       ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
-      : E.right(generator.getTypeUnknown());
+      : E.right(getGenerator(options).getTypeUnknown());
   };
 }
 
 function getPropertyHandler<T extends Property>(
   isT: (property: Property) => property is T,
-  handleT: (options: GenerateOptions) => (property: T) => TypeResult
+  handleT: (options: Options) => (property: T) => TypeResult
 ) {
-  return function(options: GenerateOptions) {
+  return function(options: Options) {
     return function(property: Property): E.Either<TypeResult, Property> {
       return isT(property)
         ? E.left(handleT(options)(property))
@@ -124,7 +127,7 @@ const getTypeAllOf = getPropertyHandler(
   options => (property): TypeResult =>
     pipe(
       traverseArray(property.allOf, getType(options)),
-      E.map(options.generator.getTypeAllOf)
+      E.map(getGenerator(options).getTypeAllOf)
     )
 );
 const getTypeOneOf = getPropertyHandler(
@@ -132,7 +135,7 @@ const getTypeOneOf = getPropertyHandler(
   options => (property): TypeResult =>
     pipe(
       traverseArray(property.oneOf, getType(options)),
-      E.map(options.generator.getTypeOneOf)
+      E.map(getGenerator(options).getTypeOneOf)
     )
 );
 const getTypeAnyOf = getPropertyHandler(
@@ -140,7 +143,7 @@ const getTypeAnyOf = getPropertyHandler(
   options => (property): TypeResult =>
     pipe(
       traverseArray(property.anyOf, getType(options)),
-      E.map(options.generator.getTypeAnyOf)
+      E.map(getGenerator(options).getTypeAnyOf)
     )
 );
 const getTypeArray = getPropertyHandler(
@@ -149,29 +152,27 @@ const getTypeArray = getPropertyHandler(
     pipe(
       property.items,
       getType(options),
-      E.map(options.generator.getTypeArray)
+      E.map(getGenerator(options).getTypeArray)
     )
 );
 const getTypeEnum = getPropertyHandler(
   isEnum,
-  ({ generator }) => (property): TypeResult =>
-    E.right(generator.getTypeEnum(property.enum))
+  options => (property): TypeResult =>
+    E.right(getGenerator(options).getTypeEnum(property.enum))
 );
 const getTypeInteger = getPropertyHandler(
   isInteger,
-  ({ generator }) => (): TypeResult => E.right(generator.getTypeInteger())
+  options => (): TypeResult => E.right(getGenerator(options).getTypeInteger())
 );
-const getTypeNumber = getPropertyHandler(
-  isNumber,
-  ({ generator }) => (): TypeResult => E.right(generator.getTypeNumber())
+const getTypeNumber = getPropertyHandler(isNumber, options => (): TypeResult =>
+  E.right(getGenerator(options).getTypeNumber())
 );
-const getTypeString = getPropertyHandler(
-  isString,
-  ({ generator }) => (): TypeResult => E.right(generator.getTypeString())
+const getTypeString = getPropertyHandler(isString, options => (): TypeResult =>
+  E.right(getGenerator(options).getTypeString())
 );
 const getTypeBoolean = getPropertyHandler(
   isBoolean,
-  ({ generator }) => (): TypeResult => E.right(generator.getTypeBoolean())
+  options => (): TypeResult => E.right(getGenerator(options).getTypeBoolean())
 );
 const getTypeObject = getPropertyHandler(
   isObject,
@@ -184,18 +185,18 @@ const getTypeObject = getPropertyHandler(
             childProperty,
             getType(options),
             E.map(
-              options.generator.getProperty(
+              getGenerator(options).getProperty(
                 key,
                 isRequired(key, property.required)
               )
             )
           )
       ),
-      E.map(options.generator.getTypeObject)
+      E.map(getGenerator(options).getTypeObject)
     )
 );
 
-function getType(options: GenerateOptions) {
+function getType(options: Options) {
   return function(property: Property): TypeResult {
     return pipe(
       property,
@@ -216,22 +217,7 @@ function getType(options: GenerateOptions) {
         )
       ),
       E.fold(identity, getInvalidType(options)),
-      E.map(doIf(isNullable(property), options.generator.makeTypeNullable))
-    );
-  };
-}
-
-function getTypesFromSchemas(options: GenerateOptions) {
-  return function(schemas: {
-    [key: string]: Property;
-  }): E.Either<Error, string[]> {
-    return pipe(
-      traverseArray(Object.entries(schemas), ([key, property]) =>
-        pipe(
-          getType(options)(property),
-          E.map(options.generator.getTypeDefinition(key))
-        )
-      )
+      E.map(doIf(isNullable(property), getGenerator(options).makeTypeNullable))
     );
   };
 }
@@ -242,43 +228,49 @@ function checkOpenApiVersion(swagger: Swagger): E.Either<Error, Swagger> {
     : E.left(new Error(`Version not supported: ${swagger.openapi}`));
 }
 
-function getGenerateOptions({
-  exitOnInvalidType,
-  type
-}: Options): GenerateOptions {
-  return {
-    exitOnInvalidType,
-    generator: {
-      TypeScript: typeScriptGenerator,
-      Flow: flowGenerator,
-      CodecIoTs: codecGenerator
-    }[type] as Generator<unknown>
+function getTypesFromSchemas(options: Options) {
+  return function(schemas: {
+    [key: string]: Property;
+  }): E.Either<Error, string[]> {
+    return pipe(
+      traverseArray(Object.entries(schemas), ([key, property]) =>
+        pipe(
+          getType(options)(property),
+          E.map(getGenerator(options).getTypeDefinition(key))
+        )
+      )
+    );
   };
 }
 
-function schemasToString(
-  options: GenerateOptions
+const eitherPrefix = (b: E.Either<Error, string>) => (
+  c: E.Either<Error, string>
+): E.Either<Error, string> => {
+  return E.ap(c)(E.map(prefix)(b));
+};
+
+function baseDefinitionsToString(
+  options: Options
 ): (schemas: { [key: string]: Property }) => E.Either<Error, string> {
   return flow(
     getTypesFromSchemas(options),
-    E.map(options.generator.combineTypes)
+    E.map(getGenerator(options).combineTypes)
   );
 }
 
-function schemasToStringForCodecs(
-  options: GenerateOptions
-): (schemas: { [key: string]: Property }) => E.Either<Error, string> {
-  return (schemas): E.Either<Error, string> => {
+function definitionsToString(options: Options) {
+  return (schemas: { [key: string]: Property }): E.Either<Error, string> => {
     return pipe(
-      [
-        schemasToString({
-          ...options,
-          generator: typeScriptGenerator as Generator<unknown>
-        })(schemas),
-        schemasToString(options)(schemas)
-      ],
-      A.array.sequence(E.either),
-      E.map(values => values.join(";"))
+      baseDefinitionsToString(options)(schemas),
+      doIf(
+        constant(options.type === "CodecIoTs"),
+        flow(
+          E.map(prefix(";")),
+          eitherPrefix(
+            baseDefinitionsToString({ ...options, type: "TypeScript" })(schemas)
+          )
+        )
+      )
     );
   };
 }
@@ -289,12 +281,8 @@ function generate(
   return flow(
     checkOpenApiVersion,
     E.chain(getDefinitions),
-    doIfElse(
-      constant(options.type === "CodecIoTs"),
-      E.chain(schemasToStringForCodecs(getGenerateOptions(options))),
-      E.chain(schemasToString(getGenerateOptions(options)))
-    ),
-    E.map(getGenerateOptions(options).generator.addHeader)
+    E.chain(definitionsToString(options)),
+    E.map(getGenerator(options).addHeader)
   );
 }
 

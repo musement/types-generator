@@ -1,24 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDefinitions, getType, generate } from "../generate";
 import { right, left } from "fp-ts/lib/Either";
-import { typeScriptGenerator } from "../generators/typescriptGenerator";
-import { flowGenerator } from "../generators/flowGenerator";
 import { Options } from "../models/Options";
-import { codecGenerator } from "../generators/codecGenerator";
 
 const baseOptions: Options = { exitOnInvalidType: true, type: "TypeScript" };
-const optionsTypeScript = {
-  exitOnInvalidType: true,
-  generator: typeScriptGenerator
-};
-const optionsFlow = {
-  exitOnInvalidType: true,
-  generator: flowGenerator
-};
-const optionsCodecIoTs = {
-  exitOnInvalidType: true,
-  generator: codecGenerator
-};
+const optionsTypeScript: Options = { ...baseOptions, type: "TypeScript" };
+const optionsFlow: Options = { ...baseOptions, type: "Flow" };
+const optionsCodecIoTs: Options = { ...baseOptions, type: "CodecIoTs" };
 
 describe("getDefinitions", () => {
   describe("when the swagger contains the schemas", () => {
@@ -904,11 +892,7 @@ describe("getType", () => {
       describe("when options.type == 'Flow'", () => {
         test("it returns 'mixed'", () => {
           expect(
-            getType({
-              ...optionsTypeScript,
-              exitOnInvalidType: false,
-              generator: flowGenerator
-            })({
+            getType({ ...optionsFlow, exitOnInvalidType: false })({
               type: "invalid"
             } as never)
           ).toEqual(right("mixed"));
@@ -925,15 +909,15 @@ describe("generate", () => {
 
     test("it matches the snapshot", () => {
       expect(
-        generate({ exitOnInvalidType: false, type: "TypeScript" })(swagger)
+        generate({ ...optionsTypeScript, exitOnInvalidType: false })(swagger)
       ).toMatchSnapshot();
 
       expect(
-        generate({ exitOnInvalidType: false, type: "Flow" })(swagger)
+        generate({ ...optionsFlow, exitOnInvalidType: false })(swagger)
       ).toMatchSnapshot();
 
       expect(
-        generate({ exitOnInvalidType: false, type: "CodecIoTs" })(swagger)
+        generate({ ...optionsCodecIoTs, exitOnInvalidType: false })(swagger)
       ).toMatchSnapshot();
     });
   });
