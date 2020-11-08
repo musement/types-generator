@@ -19,7 +19,7 @@ var IE = __importStar(require("fp-ts/lib/IOEither"));
 var TE = __importStar(require("fp-ts/lib/TaskEither"));
 var E = __importStar(require("fp-ts/lib/Either"));
 var pipeable_1 = require("fp-ts/lib/pipeable");
-var utils_1 = require("./utils");
+var utils_1 = require("./services/utils");
 var function_1 = require("fp-ts/lib/function");
 function isUrl(pathOrUrl) {
     return pathOrUrl.indexOf("https://") !== -1;

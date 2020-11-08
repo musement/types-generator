@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/musement/types-generator/compare/v0.0.8...v0.0.9) (2020-11-08)
+
+
+### Features
+
+* add io-ts codec generator ([f2599fe](https://github.com/musement/types-generator/commit/f2599feb03b2b68e3d093bbbadd5f0ec3287ad60))
+
+
+### Bug Fixes
+
+* update types to support "CodecIoTs" ([4ee6298](https://github.com/musement/types-generator/commit/4ee629897ea5af7ed5018db26b9ac7266b096f04))
+
 ### [0.0.8](https://gitlab.com/musement/experiments/types-generator/compare/v0.0.7...v0.0.8) (2020-07-23)
 
 

@@ -1,0 +1,14 @@
+import { Swagger } from "../models/Swagger";
+export declare function doIfElse<T, V>(checkValue: (value: V) => boolean, doIfTrue: (value: V) => T, doIfFalse: (value: V) => T): (value: V) => T;
+export declare function doIf<T>(checkValue: (value: T) => boolean, doIfTrue: (value: T) => T): (value: T) => T;
+export declare function patch(swagger: Swagger): (toApply: {}) => Swagger;
+export declare function join(separator: string): (array: string[]) => string;
+export declare function reduce<T, K>(fn: (reduced: K, item: T) => K, initialValue: K): (array: T[]) => K;
+export declare function map<T>(fn: (item: string, index: number) => T): (array: string[]) => T[];
+export declare function split(separator: string): (value: string) => string[];
+export declare function prefix(start: string): (value: string) => string;
+export declare function suffix(end: string): (value: string) => string;
+export declare function surround(start: string, end: string): (value: string) => string;
+export declare function replace(searchValue: string, replaceValue: string): (value: string) => string;
+export declare const toCamelCase: (value: string) => string;
+export declare const toPascalCase: (value: string) => string;
