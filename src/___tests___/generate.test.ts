@@ -513,7 +513,7 @@ describe("getType", () => {
               itemUuid: { type: "string" }
             }
           } as any)
-        ).toEqual(right("PostCartItem&{itemUuid?:string}"));
+        ).toEqual(right('PostCartItem&{"itemUuid"?:string}'));
       });
     });
 
@@ -600,7 +600,7 @@ describe("getType", () => {
               itemUuid: { type: "string" }
             }
           } as any)
-        ).toEqual(right("PostCartItem|{itemUuid?:string}"));
+        ).toEqual(right('PostCartItem|{"itemUuid"?:string}'));
       });
     });
 
@@ -683,7 +683,7 @@ describe("getType", () => {
               itemUuid: { type: "string" }
             }
           } as any)
-        ).toEqual(right("PostCartItem|{itemUuid?:string}"));
+        ).toEqual(right('PostCartItem|{"itemUuid"?:string}'));
       });
     });
 
@@ -755,7 +755,9 @@ describe("getType", () => {
             type: "object"
           })
         ).toEqual(
-          right("{1?:string,names?:string,data?:{age?:number,address?:string}}")
+          right(
+            '{"1"?:string,"names"?:string,"data"?:{"age"?:number,"address"?:string}}'
+          )
         );
       });
     });
@@ -779,7 +781,7 @@ describe("getType", () => {
           })
         ).toEqual(
           right(
-            '{|"1"?:string,names?:string,data?:{|age?:number,address?:string|}|}'
+            '{|"1"?:string,"names"?:string,"data"?:{|"age"?:number,"address"?:string|}|}'
           )
         );
       });
@@ -804,7 +806,7 @@ describe("getType", () => {
           })
         ).toEqual(
           right(
-            "({names?:(string|null),data?:{age?:number,address?:string}}|null)"
+            '({"names"?:(string|null),"data"?:{"age"?:number,"address"?:string}}|null)'
           )
         );
       });
@@ -831,7 +833,7 @@ describe("getType", () => {
           })
         ).toEqual(
           right(
-            "{names:string,addresses?:string,data:{age:number,address?:string}}"
+            '{"names":string,"addresses"?:string,"data":{"age":number,"address"?:string}}'
           )
         );
       });
@@ -951,46 +953,7 @@ describe("generate", () => {
           }
         })
       ).toEqual(
-        right('"use strict";\nexport type ExceptionResponse={code?:string}')
-      );
-    });
-  });
-
-  describe("when a property contains '-'", () => {
-    test("it converts the name to camelCase", () => {
-      expect(
-        generate(baseOptions)({
-          openapi: "3.0.0",
-          components: {
-            schemas: {
-              response: {
-                properties: {
-                  type: {
-                    description:
-                      "Bulk type useful for apply proper validations",
-                    type: "string",
-                    enum: [
-                      "timeslot",
-                      "daily",
-                      "open-max-days",
-                      "open-end-date"
-                    ]
-                  },
-                  "tag-name": {
-                    description: "Name to identify a bulk",
-                    type: "string",
-                    nullable: true
-                  }
-                },
-                type: "object"
-              }
-            }
-          }
-        })
-      ).toEqual(
-        right(
-          "\"use strict\";\nexport type Response={type?:'timeslot'|'daily'|'open-max-days'|'open-end-date',tagName?:(string|null)}"
-        )
+        right('"use strict";\nexport type ExceptionResponse={"code"?:string}')
       );
     });
   });

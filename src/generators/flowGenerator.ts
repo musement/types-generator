@@ -8,11 +8,8 @@ import {
   prefix,
   suffix,
   surround,
-  toCamelCase,
   toPascalCase
 } from "../services/utils";
-
-const isNumberKey = flow(parseInt, not(isNaN));
 
 export const flowGenerator: Generator = {
   getTypeString: () => "string",
@@ -29,8 +26,7 @@ export const flowGenerator: Generator = {
   getProperty: (key, isRequired) =>
     pipe(
       key,
-      toCamelCase,
-      doIf(constant(isNumberKey(key)), surround('"', '"')),
+      surround('"', '"'),
       doIf(not(constant(isRequired)), suffix("?")),
       suffix(":"),
       prefix

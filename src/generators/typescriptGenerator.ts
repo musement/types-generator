@@ -8,7 +8,6 @@ import {
   prefix,
   suffix,
   surround,
-  toCamelCase,
   toPascalCase
 } from "../services/utils";
 
@@ -27,7 +26,7 @@ export const typeScriptGenerator: Generator = {
   getProperty: (key, isRequired) =>
     pipe(
       key,
-      toCamelCase,
+      surround('"', '"'),
       doIf(not(constant(isRequired)), suffix("?")),
       suffix(":"),
       prefix

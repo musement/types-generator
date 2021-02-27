@@ -9,7 +9,6 @@ import {
   reduce,
   suffix,
   surround,
-  toCamelCase,
   toPascalCase
 } from "../services/utils";
 
@@ -25,7 +24,8 @@ const getIntersection = doIfElse(
   flow(join(","), surround("t.intersection([", "])"))
 );
 
-const getKey = (key: string): string => pipe(key, toCamelCase, suffix(":"));
+const getKey = (key: string): string =>
+  pipe(key, surround('"', '"'), suffix(":"));
 
 const getType = flow(join(","), surround("t.type({", "})"));
 
