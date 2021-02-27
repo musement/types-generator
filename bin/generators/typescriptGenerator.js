@@ -16,7 +16,7 @@ exports.typeScriptGenerator = {
     getTypeObject: function_1.flow(utils_1.join(","), utils_1.surround("{", "}")),
     getTypeReference: utils_1.toPascalCase,
     getProperty: function (key, isRequired) {
-        return pipeable_1.pipe(key, utils_1.toCamelCase, utils_1.doIf(function_1.not(function_1.constant(isRequired)), utils_1.suffix("?")), utils_1.suffix(":"), utils_1.prefix);
+        return pipeable_1.pipe(key, utils_1.surround('"', '"'), utils_1.doIf(function_1.not(function_1.constant(isRequired)), utils_1.suffix("?")), utils_1.suffix(":"), utils_1.prefix);
     },
     getTypeUnknown: function_1.constant("unknown"),
     addHeader: utils_1.prefix('"use strict";\n'),

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/musement/types-generator/compare/v0.0.9...v0.0.10) (2021-02-27)
+
+
+### Bug Fixes
+
+* do not modify property names ([5afaabe](https://github.com/musement/types-generator/commit/5afaabe82a4fb1eca5c51c1e51d8093833c90251))
+
 ### [0.0.9](https://github.com/musement/types-generator/compare/v0.0.8...v0.0.9) (2020-11-08)
 
 

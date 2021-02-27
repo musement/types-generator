@@ -1,6 +1,6 @@
 {
   "name": "@musement/types-generator",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A CLI to generate types definitions for flow and typescript",
   "main": "dist/lib/index.js",
   "scripts": {

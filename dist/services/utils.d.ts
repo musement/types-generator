@@ -10,5 +10,4 @@ export declare function prefix(start: string): (value: string) => string;
 export declare function suffix(end: string): (value: string) => string;
 export declare function surround(start: string, end: string): (value: string) => string;
 export declare function replace(searchValue: string, replaceValue: string): (value: string) => string;
-export declare const toCamelCase: (value: string) => string;
 export declare const toPascalCase: (value: string) => string;

@@ -12,7 +12,9 @@ var pipeable_1 = require("fp-ts/lib/pipeable");
 var utils_1 = require("../services/utils");
 var getUnion = utils_1.doIfElse(function (values) { return values.length === 1; }, function (values) { return values[0]; }, function_1.flow(utils_1.join(","), utils_1.surround("t.union([", "])")));
 var getIntersection = utils_1.doIfElse(function (values) { return values.length === 1; }, function (values) { return values[0]; }, function_1.flow(utils_1.join(","), utils_1.surround("t.intersection([", "])")));
-var getKey = function (key) { return pipeable_1.pipe(key, utils_1.toCamelCase, utils_1.suffix(":")); };
+var getKey = function (key) {
+    return pipeable_1.pipe(key, utils_1.surround('"', '"'), utils_1.suffix(":"));
+};
 var getType = function_1.flow(utils_1.join(","), utils_1.surround("t.type({", "})"));
 var getPartial = function_1.flow(utils_1.join(","), utils_1.surround("t.partial({", "})"));
 var mapRequiredAndOptional = function (_a) {
