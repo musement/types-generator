@@ -12,13 +12,36 @@
     "build:lib:watch": "tsc -p ./tsconfig-lib.json  --declaration--watch",
     "lint": "eslint src --ext .ts",
     "typescript:check": "tsc -p . --noEmit",
-    "release": "npm run test && standard-version -a"
+    "release": "standard-version -a"
   },
-  "author": "",
+  "standard-version": {
+    "scripts": {
+      "prerelease": "npm run build && npm run build:lib",
+      "precommit": "git add bin dist"
+    }
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "author": "Musement",
+  "contributors": [
+    "Marco Ziliani <marco.ziliani@musement.com>"
+  ],
+  "homepage": "https://github.com/musement/types-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/musement/types-generator"
+  },
+  "bugs": {
+    "url": "https://github.com/musement/types-generator/issues"
+  },
   "license": "ISC",
   "keywords": [
-    "cli",
-    "generate-types"
+    "openapi",
+    "typescript",
+    "flow",
+    "io-ts"
   ],
   "bin": {
     "generate-types": "./bin/index.js"
@@ -71,12 +94,6 @@
         "functions": 100,
         "lines": 100
       }
-    }
-  },
-  "standard-version": {
-    "scripts": {
-      "prerelease": "npm run build && npm run build:lib",
-      "precommit": "git add bin dist"
     }
   },
   "husky": {
