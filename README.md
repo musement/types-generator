@@ -7,13 +7,13 @@ Types generator is a Typescript project that allows to generate types for Typesc
 Install Types generator using [`npm`](https://www.npmjs.com/):
 
 ```bash
-npm install --save-dev git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+npm install --save-dev @musement/types-generator
 ```
 
 Or [`yarn`](https://yarnpkg.com/en/package):
 
 ```bash
-yarn add --dev git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+yarn add --dev @musement/types-generator
 ```
 
 Add the following section to your package.json:
@@ -31,13 +31,13 @@ Finally, run yarn generate-types or npm run generate-types
 You can run type generator directly from the CLI if it's globally available in your PATH.
 
 ```bash
-npm install -g git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+npm install -g @musement/types-generator
 ```
 
 Or [`yarn`](https://yarnpkg.com/en/package):
 
 ```bash
-yarn global add git+ssh://git@gitlab.com:musement/experiments/types-generator.git
+yarn global add @musement/types-generator
 ```
 
 Here's how to run types generator:
@@ -74,10 +74,6 @@ npm run test
 ## Built With
 
 * [fp-ts](https://github.com/gcanti/fp-tsa) - Used as functional programming library
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/musement/experiments/types-generator/-/tags).
 
 ## Using the issue tracker
 
