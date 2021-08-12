@@ -32,7 +32,7 @@ function getContentFromPath<T>(file: string): IE.IOEither<Error, T> {
       const content = fs.readFileSync(file, "utf8");
       const swagger =
         ext === ".yaml" || ext === ".yml"
-          ? (yaml.safeLoad(content) as T)
+          ? ((yaml.safeLoad(content) as unknown) as T)
           : (JSON.parse(content) as T);
       return swagger;
     },
