@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.toPascalCase = exports.replace = exports.surround = exports.suffix = exports.prefix = exports.split = exports.map = exports.reduce = exports.join = exports.patch = exports.doIf = exports.doIfElse = void 0;
 var deepmerge_1 = __importDefault(require("deepmerge"));
 var function_1 = require("fp-ts/lib/function");
 function doIfElse(checkValue, doIfTrue, doIfFalse) {

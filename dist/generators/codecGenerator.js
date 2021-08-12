@@ -7,6 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.codecGenerator = void 0;
 var function_1 = require("fp-ts/lib/function");
 var pipeable_1 = require("fp-ts/lib/pipeable");
 var utils_1 = require("../services/utils");

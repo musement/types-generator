@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isObject = exports.isInteger = exports.isNumber = exports.isBoolean = exports.isString = exports.isEnum = exports.isArray = exports.isAnyOf = exports.isOneOf = exports.isAllOf = exports.isReference = void 0;
 function isReference(property) {
     return "$ref" in property;
 }
