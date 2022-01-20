@@ -4,12 +4,18 @@ exports.flowGenerator = void 0;
 var function_1 = require("fp-ts/lib/function");
 var pipeable_1 = require("fp-ts/lib/pipeable");
 var utils_1 = require("../services/utils");
+var safeSurroundEnum = function (item) {
+    if (item.indexOf("'") !== -1) {
+        return utils_1.surround('"', '"')(item);
+    }
+    return utils_1.surround("'", "'")(item);
+};
 exports.flowGenerator = {
     getTypeString: function () { return "string"; },
     getTypeNumber: function () { return "number"; },
     getTypeInteger: function () { return "number"; },
     getTypeBoolean: function () { return "boolean"; },
-    getTypeEnum: function_1.flow(utils_1.map(utils_1.surround("'", "'")), utils_1.join("|")),
+    getTypeEnum: function_1.flow(utils_1.map(safeSurroundEnum), utils_1.join("|")),
     getTypeArray: utils_1.surround("Array<", ">"),
     getTypeAnyOf: utils_1.join("|"),
     getTypeOneOf: utils_1.join("|"),
