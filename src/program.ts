@@ -1,6 +1,6 @@
 import * as TE from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
+import { pipe } from "fp-ts/lib/function";
 import { getSwagger } from "./read";
 import { generate } from "./generate";
 import { write } from "./write";
