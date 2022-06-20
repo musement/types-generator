@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { patch } from "../utils";
+import { patch, toPascalCase } from "../utils";
 
 describe("patch", () => {
   describe("when the patch contains an existing property", () => {
@@ -135,5 +135,18 @@ describe("patch", () => {
         }
       });
     });
+  });
+});
+
+describe("toPascalCase", () => {
+  test("it should convert any string to PascalCase", () => {
+    expect(toPascalCase("test-string")).toBe("TestString");
+    expect(toPascalCase("test_string")).toBe("TestString");
+    expect(toPascalCase("test string")).toBe("TestString");
+    expect(toPascalCase("test.string")).toBe("TestString");
+    expect(toPascalCase("testString")).toBe("TestString");
+    expect(toPascalCase("TestString")).toBe("TestString");
+    expect(toPascalCase("Multiple_test-string")).toBe("MultipleTestString");
+    expect(toPascalCase("multiple.test String")).toBe("MultipleTestString");
   });
 });
