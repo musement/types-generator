@@ -51,7 +51,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate = exports.getType = exports.getDefinitions = void 0;
 var E = __importStar(require("fp-ts/lib/Either"));
 var A = __importStar(require("fp-ts/lib/Array"));
-var pipeable_1 = require("fp-ts/lib/pipeable");
 var function_1 = require("fp-ts/lib/function");
 var utils_1 = require("./services/utils");
 var type_guards_1 = require("./type-guards");
@@ -59,7 +58,7 @@ var type_guards_2 = require("./type-guards");
 var typescriptGenerator_1 = require("./generators/typescriptGenerator");
 var flowGenerator_1 = require("./generators/flowGenerator");
 var codecGenerator_1 = require("./generators/codecGenerator");
-var traverseArray = A.array.traverse(E.either);
+var traverseArray = A.Traversable.traverse(E.Applicative);
 function getGenerator(_a) {
     var type = _a.type;
     return {
@@ -131,16 +130,16 @@ var getTypeRef = getPropertyHandler(type_guards_1.isReference, function (options
     return E.right(getReferenceName(options)(property.$ref));
 }; });
 var getTypeAllOf = getPropertyHandler(isValidAllOf, function (options) { return function (property) {
-    return pipeable_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
+    return function_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
 }; });
 var getTypeOneOf = getPropertyHandler(type_guards_1.isOneOf, function (options) { return function (property) {
-    return pipeable_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
+    return function_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
 }; });
 var getTypeAnyOf = getPropertyHandler(type_guards_1.isAnyOf, function (options) { return function (property) {
-    return pipeable_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
+    return function_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
 }; });
 var getTypeArray = getPropertyHandler(type_guards_1.isArray, function (options) { return function (property) {
-    return pipeable_1.pipe(property.items, getType(options), E.map(getGenerator(options).getTypeArray));
+    return function_1.pipe(property.items, getType(options), E.map(getGenerator(options).getTypeArray));
 }; });
 var getTypeEnum = getPropertyHandler(type_guards_1.isEnum, function (options) { return function (property) {
     return E.right(getGenerator(options).getTypeEnum(property.enum));
@@ -154,14 +153,14 @@ var getTypeString = getPropertyHandler(type_guards_2.isString, function (options
 }; });
 var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function (options) { return function () { return E.right(getGenerator(options).getTypeBoolean()); }; });
 var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) { return function (property) {
-    return pipeable_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
+    return function_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
         var key = _a[0], childProperty = _a[1];
-        return pipeable_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
+        return function_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
     }), E.map(getGenerator(options).getTypeObject));
 }; });
 function getType(options) {
     return function (property) {
-        return pipeable_1.pipe(property, fixErrorsOnProperty, function_1.flow(getTypeRef(options), E.chain(getTypeAllOf(options)), E.chain(getTypeAnyOf(options)), E.chain(getTypeOneOf(options)), E.chain(getTypeArray(options)), E.chain(getTypeObject(options)), function_1.flow(E.chain(getTypeEnum(options)), E.chain(getTypeNumber(options)), E.chain(getTypeString(options)), E.chain(getTypeBoolean(options)), E.chain(getTypeInteger(options)))), E.fold(function_1.identity, getInvalidType(options)), E.map(utils_1.doIf(isNullable(property), getGenerator(options).makeTypeNullable)));
+        return function_1.pipe(property, fixErrorsOnProperty, function_1.flow(getTypeRef(options), E.chain(getTypeAllOf(options)), E.chain(getTypeAnyOf(options)), E.chain(getTypeOneOf(options)), E.chain(getTypeArray(options)), E.chain(getTypeObject(options)), function_1.flow(E.chain(getTypeEnum(options)), E.chain(getTypeNumber(options)), E.chain(getTypeString(options)), E.chain(getTypeBoolean(options)), E.chain(getTypeInteger(options)))), E.fold(function_1.identity, getInvalidType(options)), E.map(utils_1.doIf(isNullable(property), getGenerator(options).makeTypeNullable)));
     };
 }
 exports.getType = getType;
@@ -172,10 +171,10 @@ function checkOpenApiVersion(swagger) {
 }
 function getTypesFromSchemas(options) {
     return function (schemas) {
-        return pipeable_1.pipe(traverseArray(Object.entries(schemas), function (_a) {
+        return traverseArray(Object.entries(schemas), function (_a) {
             var key = _a[0], property = _a[1];
-            return pipeable_1.pipe(getType(options)(property), E.map(getGenerator(options).getTypeDefinition(key)));
-        }));
+            return E.map(getGenerator(options).getTypeDefinition(key))(getType(options)(property));
+        });
     };
 }
 var eitherPrefix = function (b) { return function (c) {
@@ -186,7 +185,7 @@ function baseDefinitionsToString(options) {
 }
 function definitionsToString(options) {
     return function (schemas) {
-        return pipeable_1.pipe(baseDefinitionsToString(options)(schemas), utils_1.doIf(function_1.constant(options.type === "CodecIoTs"), function_1.flow(E.map(utils_1.prefix(";")), eitherPrefix(baseDefinitionsToString(__assign(__assign({}, options), { type: "TypeScript" }))(schemas)))));
+        return function_1.pipe(baseDefinitionsToString(options)(schemas), utils_1.doIf(function_1.constant(options.type === "CodecIoTs"), function_1.flow(E.map(utils_1.prefix(";")), eitherPrefix(baseDefinitionsToString(__assign(__assign({}, options), { type: "TypeScript" }))(schemas)))));
     };
 }
 function generate(options) {

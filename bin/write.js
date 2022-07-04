@@ -26,7 +26,7 @@ exports.write = void 0;
 var fs_1 = __importDefault(require("fs"));
 var prettier_1 = __importDefault(require("prettier"));
 var TE = __importStar(require("fp-ts/lib/TaskEither"));
-var pipeable_1 = require("fp-ts/lib/pipeable");
+var function_1 = require("fp-ts/lib/function");
 function prettify(types) {
     return prettier_1.default.format(types);
 }
@@ -36,8 +36,6 @@ function writeToFile(filename) {
     };
 }
 function write(filename) {
-    return function (types) {
-        return pipeable_1.pipe(types, prettify, writeToFile(filename));
-    };
+    return function_1.flow(prettify, writeToFile(filename));
 }
 exports.write = write;

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.flowGenerator = void 0;
 var function_1 = require("fp-ts/lib/function");
-var pipeable_1 = require("fp-ts/lib/pipeable");
+var Predicate_1 = require("fp-ts/lib/Predicate");
 var utils_1 = require("../services/utils");
 exports.flowGenerator = {
     getTypeString: function () { return "string"; },
@@ -17,7 +17,7 @@ exports.flowGenerator = {
     getTypeObject: function_1.flow(utils_1.join(","), utils_1.surround("{|", "|}")),
     getTypeReference: utils_1.toPascalCase,
     getProperty: function (key, isRequired) {
-        return pipeable_1.pipe(key, utils_1.surround('"', '"'), utils_1.doIf(function_1.not(function_1.constant(isRequired)), utils_1.suffix("?")), utils_1.suffix(":"), utils_1.prefix);
+        return function_1.pipe(key, utils_1.surround('"', '"'), utils_1.doIf(Predicate_1.not(function_1.constant(isRequired)), utils_1.suffix("?")), utils_1.suffix(":"), utils_1.prefix);
     },
     getTypeUnknown: function_1.constant("mixed"),
     addHeader: utils_1.prefix("// @flow strict\n"),

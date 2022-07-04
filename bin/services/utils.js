@@ -83,4 +83,4 @@ function replace(searchValue, replaceValue) {
     };
 }
 exports.replace = replace;
-exports.toPascalCase = function_1.flow(split("-"), map(function (token) { return token[0].toUpperCase() + token.slice(1); }), join(""));
+exports.toPascalCase = function_1.flow(function (s) { return s.match(/[a-zA-Z0-9]+/g) || []; }, map(function (token) { return token[0].toUpperCase() + token.slice(1); }), join(""));

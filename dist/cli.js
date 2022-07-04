@@ -38,7 +38,7 @@ var arg_1 = __importDefault(require("arg"));
 var inquirer_1 = __importDefault(require("inquirer"));
 var T = __importStar(require("fp-ts/lib/Task"));
 var E = __importStar(require("fp-ts/lib/Either"));
-var pipeable_1 = require("fp-ts/lib/pipeable");
+var function_1 = require("fp-ts/lib/function");
 function parseArgumentsIntoOptions(rawArgs) {
     var args = arg_1.default({
         "--destination": String,
@@ -104,9 +104,7 @@ function getAnswers(questions) {
     return function () { return inquirer_1.default.prompt(questions); };
 }
 function promptForMissingOptions(options) {
-    return pipeable_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
+    return function_1.pipe(options, getQuestions, getAnswers, T.map(function (answers) { return (__assign(__assign({}, options), answers)); }), T.map(checkOptions));
 }
-function cli(args) {
-    return pipeable_1.pipe(args, parseArgumentsIntoOptions, promptForMissingOptions);
-}
+var cli = function_1.flow(parseArgumentsIntoOptions, promptForMissingOptions);
 exports.cli = cli;
