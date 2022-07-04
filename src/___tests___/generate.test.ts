@@ -162,9 +162,9 @@ describe("getType", () => {
         expect(
           getType(optionsTypeScript)({
             type: "string",
-            enum: ["text", "date", "number"]
+            enum: ["text", "date", "number", "not's error"]
           })
-        ).toEqual(right("'text'|'date'|'number'"));
+        ).toEqual(right("'text'|'date'|'number'|\"not's error\""));
       });
 
       describe("when the property is nullable", () => {
@@ -195,10 +195,10 @@ describe("getType", () => {
           expect(
             getType(optionsFlow)({
               type: "string",
-              enum: ["text", "date", "number"],
+              enum: ["text", "date", "number", "not's error"],
               nullable: true
             })
-          ).toEqual(right("('text'|'date'|'number'|null)"));
+          ).toEqual(right("('text'|'date'|'number'|\"not's error\"|null)"));
         });
       });
     });
@@ -208,11 +208,11 @@ describe("getType", () => {
         expect(
           getType(optionsCodecIoTs)({
             type: "string",
-            enum: ["text", "date", "number"]
+            enum: ["text", "date", "number", "not's error"]
           })
         ).toEqual(
           right(
-            "t.union([t.literal('text'),t.literal('date'),t.literal('number')])"
+            "t.union([t.literal('text'),t.literal('date'),t.literal('number'),t.literal(\"not's error\")])"
           )
         );
       });

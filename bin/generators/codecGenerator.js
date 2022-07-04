@@ -29,12 +29,18 @@ var splitRequiredAndOptional = utils_1.reduce(function (_a, _b) {
         ? [__spreadArrays(required, [property]), optional]
         : [required, __spreadArrays(optional, [property])];
 }, [[], []]);
+var safeSurroundEnum = function (item) {
+    if (item.indexOf("'") !== -1) {
+        return utils_1.surround('t.literal("', '")')(item);
+    }
+    return utils_1.surround("t.literal('", "')")(item);
+};
 exports.codecGenerator = {
     getTypeString: function () { return "t.string"; },
     getTypeNumber: function () { return "t.number"; },
     getTypeInteger: function () { return "t.number"; },
     getTypeBoolean: function () { return "t.boolean"; },
-    getTypeEnum: function_1.flow(utils_1.map(utils_1.surround("t.literal('", "')")), getUnion),
+    getTypeEnum: function_1.flow(utils_1.map(safeSurroundEnum), getUnion),
     getTypeArray: utils_1.surround("t.array(", ")"),
     getTypeAnyOf: getUnion,
     getTypeOneOf: getUnion,

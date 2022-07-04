@@ -51,13 +51,18 @@ type PropertyModel = {
   isRequired: boolean;
   property: string;
 };
-
+const safeSurroundEnum = (item: string): string => {
+  if (item.indexOf("'") !== -1) {
+    return surround('t.literal("', '")')(item);
+  }
+  return surround("t.literal('", "')")(item);
+};
 export const codecGenerator: Generator<PropertyModel> = {
   getTypeString: () => "t.string",
   getTypeNumber: () => "t.number",
   getTypeInteger: () => "t.number",
   getTypeBoolean: () => "t.boolean",
-  getTypeEnum: flow(map(surround("t.literal('", "')")), getUnion),
+  getTypeEnum: flow(map(safeSurroundEnum), getUnion),
   getTypeArray: surround("t.array(", ")"),
   getTypeAnyOf: getUnion,
   getTypeOneOf: getUnion,
