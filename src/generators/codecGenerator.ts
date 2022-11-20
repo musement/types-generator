@@ -1,5 +1,4 @@
 import { flow } from "fp-ts/lib/function";
-import { pipe } from "fp-ts/lib/pipeable";
 import { ArrayOpt, Generator, StringOpt } from "../models/Generator";
 import {
   doIfElse,
@@ -24,8 +23,7 @@ const getIntersection = doIfElse(
   flow(join(","), surround("t.intersection([", "])"))
 );
 
-const getKey = (key: string): string =>
-  pipe(key, surround('"', '"'), suffix(":"));
+const getKey = flow(surround('"', '"'), suffix(":"));
 
 const getType = flow(join(","), surround("t.type({", "})"));
 

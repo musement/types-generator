@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
+import { flow, pipe } from "fp-ts/lib/function";
 import { CliConfig } from "./models/CliConfig";
 import { BuiltInParserName } from "prettier";
 
@@ -113,8 +113,6 @@ function promptForMissingOptions(
   );
 }
 
-function cli(args: string[]): TE.TaskEither<Error, CliConfig> {
-  return pipe(args, parseArgumentsIntoOptions, promptForMissingOptions);
-}
+const cli = flow(parseArgumentsIntoOptions, promptForMissingOptions);
 
 export { cli };

@@ -6,7 +6,7 @@ import path from "path";
 import * as IE from "fp-ts/lib/IOEither";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
+import { pipe } from "fp-ts/lib/function";
 import { Swagger, Schemas } from "./models/Swagger";
 import { doIf, patch, doIfElse } from "./services/utils";
 import { constant } from "fp-ts/lib/function";

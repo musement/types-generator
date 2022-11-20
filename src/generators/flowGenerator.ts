@@ -1,5 +1,5 @@
-import { constant, flow, not } from "fp-ts/lib/function";
-import { pipe } from "fp-ts/lib/pipeable";
+import { constant, flow, pipe } from "fp-ts/lib/function";
+import { not } from "fp-ts/lib/Predicate";
 import { Generator } from "../models/Generator";
 import {
   doIf,

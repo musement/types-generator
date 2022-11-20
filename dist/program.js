@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.program = void 0;
 var TE = __importStar(require("fp-ts/lib/TaskEither"));
 var E = __importStar(require("fp-ts/lib/Either"));
-var pipeable_1 = require("fp-ts/lib/pipeable");
+var function_1 = require("fp-ts/lib/function");
 var read_1 = require("./read");
 var generate_1 = require("./generate");
 var write_1 = require("./write");

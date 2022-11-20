@@ -2,9 +2,8 @@
 import { Swagger, Property } from "./models/Swagger";
 import * as E from "fp-ts/lib/Either";
 import * as A from "fp-ts/lib/Array";
-import { pipe } from "fp-ts/lib/pipeable";
 import { Options } from "./models/Options";
-import { flow, identity, constant } from "fp-ts/lib/function";
+import { flow, identity, constant, pipe } from "fp-ts/lib/function";
 import { doIf, prefix, replace } from "./services/utils";
 import {
   isReference,
@@ -27,7 +26,7 @@ import { codecGenerator } from "./generators/codecGenerator";
 
 type TypeResult = E.Either<Error, string>;
 
-const traverseArray = A.array.traverse(E.either);
+const traverseArray = A.Traversable.traverse(E.Applicative);
 
 function getGenerator({ type }: Options): Generator<unknown> {
   return {
@@ -253,12 +252,9 @@ function getTypesFromSchemas(options: Options) {
   return function (schemas: {
     [key: string]: Property;
   }): E.Either<Error, string[]> {
-    return pipe(
-      traverseArray(Object.entries(schemas), ([key, property]) =>
-        pipe(
-          getType(options)(property),
-          E.map(getGenerator(options).getTypeDefinition(key))
-        )
+    return traverseArray(Object.entries(schemas), ([key, property]) =>
+      E.map(getGenerator(options).getTypeDefinition(key))(
+        getType(options)(property)
       )
     );
   };

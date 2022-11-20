@@ -1,7 +1,7 @@
 import fs from "fs";
 import prettier, { BuiltInParserName, CustomParser } from "prettier";
 import * as TE from "fp-ts/lib/TaskEither";
-import { pipe } from "fp-ts/lib/pipeable";
+import { flow } from "fp-ts/lib/function";
 
 function prettify(
   types: string,
@@ -19,10 +19,7 @@ function writeToFile(filename: string) {
   };
 }
 
-function write(filename: string, parser?: BuiltInParserName | CustomParser) {
-  return function (types: string): TE.TaskEither<Error, void> {
-    return pipe(types, (t) => prettify(t, parser), writeToFile(filename));
-  };
+function write(filename: string, parser?: BuiltInParserName | CustomParser): (types: string) => TE.TaskEither<Error, void> {
+  return flow(types => prettify(types, parser), writeToFile(filename));
 }
-
 export { write };
