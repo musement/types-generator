@@ -19,7 +19,10 @@ function writeToFile(filename: string) {
   };
 }
 
-function write(filename: string, parser?: BuiltInParserName | CustomParser): (types: string) => TE.TaskEither<Error, void> {
-  return flow(types => prettify(types, parser), writeToFile(filename));
+function write(
+  filename: string,
+  parser?: BuiltInParserName | CustomParser
+): (types: string) => TE.TaskEither<Error, void> {
+  return flow((types) => prettify(types, parser), writeToFile(filename));
 }
 export { write };

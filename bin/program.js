@@ -34,6 +34,6 @@ function sourceToEither(source) {
 }
 function program(_a) {
     var source = _a.source, destination = _a.destination, exitOnInvalidType = _a.exitOnInvalidType, type = _a.type, patchSource = _a.patchSource, parser = _a.parser;
-    return pipeable_1.pipe(source, read_1.getSwagger(sourceToEither(patchSource)), TE.chainEitherK(generate_1.generate({ exitOnInvalidType: exitOnInvalidType, type: type })), TE.chain(write_1.write(destination, parser)));
+    return function_1.pipe(source, read_1.getSwagger(sourceToEither(patchSource)), TE.chainEitherK(generate_1.generate({ exitOnInvalidType: exitOnInvalidType, type: type })), TE.chain(write_1.write(destination, parser)));
 }
 exports.program = program;

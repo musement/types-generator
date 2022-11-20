@@ -84,6 +84,6 @@ export function replace(searchValue: string, replaceValue: string) {
 
 export const toPascalCase = flow(
   (s: string) => s.match(/[a-zA-Z0-9]+/g) || [],
-  map(token => token[0].toUpperCase() + token.slice(1)),
+  map((token) => token[0].toUpperCase() + token.slice(1)),
   join("")
 );

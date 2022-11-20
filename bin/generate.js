@@ -133,24 +133,24 @@ var getTypeRef = getPropertyHandler(type_guards_1.isReference, function (options
 });
 var getTypeAllOf = getPropertyHandler(isValidAllOf, function (options) {
     return function (property) {
-        return pipeable_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
+        return function_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
     };
 });
 var getTypeOneOf = getPropertyHandler(type_guards_1.isOneOf, function (options) {
     return function (property) {
-        return pipeable_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
+        return function_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
     };
 });
 var getTypeAnyOf = getPropertyHandler(type_guards_1.isAnyOf, function (options) {
     return function (property) {
-        return pipeable_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
+        return function_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
     };
 });
 var getTypeArray = getPropertyHandler(type_guards_1.isArray, function (options) {
     return function (property) {
         // wrap with array length if have min/max length
         var items = property.items, rest = __rest(property, ["items"]);
-        return pipeable_1.pipe(items, getType(options), E.map(function (itemType) {
+        return function_1.pipe(items, getType(options), E.map(function (itemType) {
             return getGenerator(options).getTypeArray(itemType, rest);
         }));
     };
@@ -178,9 +178,9 @@ var getTypeString = getPropertyHandler(type_guards_2.isString, function (options
 var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function (options) { return function () { return E.right(getGenerator(options).getTypeBoolean()); }; });
 var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) {
     return function (property) {
-        return pipeable_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
+        return function_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
             var key = _a[0], childProperty = _a[1];
-            return pipeable_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
+            return function_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
         }), E.map(getGenerator(options).getTypeObject));
     };
 });
