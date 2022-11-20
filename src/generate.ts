@@ -174,11 +174,15 @@ const getTypeEnum = getPropertyHandler(
 );
 const getTypeInteger = getPropertyHandler(
   isInteger,
-  (options) => (): TypeResult => E.right(getGenerator(options).getTypeInteger())
+  (options) =>
+    (itemTyp): TypeResult =>
+      E.right(getGenerator(options).getTypeInteger(itemTyp))
 );
 const getTypeNumber = getPropertyHandler(
   isNumber,
-  (options) => (): TypeResult => E.right(getGenerator(options).getTypeNumber())
+  (options) =>
+    (itemTyp): TypeResult =>
+      E.right(getGenerator(options).getTypeNumber(itemTyp))
 );
 const getTypeString = getPropertyHandler(
   isString,

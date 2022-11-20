@@ -9,10 +9,15 @@ export interface ArrayOpt {
   maxItems?: number;
 }
 
+export interface NumberOpt {
+  minimum?: number;
+  maximum?: number;
+}
+
 export interface Generator<T = string> {
   getTypeString: (options: StringOpt) => string;
-  getTypeNumber: () => string;
-  getTypeInteger: () => string;
+  getTypeNumber: (options: NumberOpt) => string;
+  getTypeInteger: (options: NumberOpt) => string;
   getTypeBoolean: () => string;
   getTypeEnum: (enumValues: string[]) => string;
   getTypeArray: (itemType: string, options: ArrayOpt) => string;

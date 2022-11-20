@@ -69,15 +69,20 @@ export const codecGenerator: Generator<PropertyModel> = {
 
     return "t.string";
   },
-  getTypeNumber: () => "t.number",
-  getTypeInteger: () => "t.number",
+  getTypeNumber: (opt) => {
+    if (opt.maximum == null && opt.minimum == null) return "t.number";
+    // apply min/max
+    return `MinMaxNumberC(${opt.minimum}, ${opt.maximum})`;
+  },
+  getTypeInteger: (opt) => {
+    if (opt.maximum == null && opt.minimum == null) return "IntegerC";
+    // apply min/max
+    return `MinMaxIntC(${opt.minimum}, ${opt.maximum})`;
+  },
   getTypeBoolean: () => "t.boolean",
   getTypeEnum: flow(map(safeSurroundEnum), getUnion),
-  getTypeArray: (itemType: string, options?: ArrayOpt) => {
-    if (
-      options == null ||
-      (options.maxItems == null && options.minItems == null)
-    )
+  getTypeArray: (itemType: string, options: ArrayOpt) => {
+    if (options.maxItems == null && options.minItems == null)
       return surround("t.array(", ")")(itemType);
     return surround(
       "MinMaxArrayC(",
@@ -97,7 +102,69 @@ export const codecGenerator: Generator<PropertyModel> = {
     flow(prefix(getKey(key)), (property) => ({ isRequired, property })),
   getTypeUnknown: () => "t.unknown",
   addHeader: flow(
-    // add string length pattern
+    // Note: Flow only allow max 9 functions
+    // add integer
+    // add min max Int
+    prefix(`
+    const IntegerC = t.number.pipe(
+      new t.Type<number, number, number>(
+        'IntegerC',
+        (i: unknown): i is number =>
+          t.number.is(i) &&
+          Number.isInteger(i),
+        (i, c) => {
+          if (!t.number.is(i)) return t.failure(i, c);
+          if (!Number.isInteger(i)) return t.failure(i, c, \`\${i} is not an integer\`);
+             
+          return t.success(i);
+        },
+        Number
+      )
+    );\n
+    function MinMaxIntC(min?: number, max?: number) {
+      return t.number.pipe(
+        new t.Type<number, number, number>(
+          'MinMaxIntC',
+          (i: unknown): i is number =>
+            t.number.is(i) &&
+            Number.isInteger(i) &&
+            (min == null || min <= i) &&
+            (max == null || max >= i),
+          (i, c) => {
+            if (!t.number.is(i)) return t.failure(i, c);
+            if (!Number.isInteger(i)) return t.failure(i, c, \`\${i} is not an integer\`);
+            if (min != null && i < min) return t.failure(i, c, \`\${i} < \${min}\`);
+            if (max != null && i > max) return t.failure(i, c, \`\${i} > \${max}\`);
+    
+            return t.success(i);
+          },
+          Number
+        )
+      );
+    };\n
+    // add min max number
+    function MinMaxNumberC(min?: number, max?: number) {
+      return t.number.pipe(
+        new t.Type<number, number, number>(
+          'MinMaxNumberC',
+          (i: unknown): i is number =>
+            t.number.is(i) &&
+            (min == null || min <= i) &&
+            (max == null || max >= i),
+          (i, c) => {
+            if (!t.number.is(i)) return t.failure(i, c);
+            if (min != null && i < min)
+              return t.failure(i, c, \`\${i} < \${min}\`);
+            if (max != null && i > max)
+              return t.failure(i, c, \`\${i} > \${max}\`);
+    
+            return t.success(i);
+          },
+          Number
+        )
+      );
+    };\n`),
+    // add string length
     prefix(`function StringLengthC(min?: number, max?: number) {
       return t.string.pipe(
         new t.Type<string, string, string>(

@@ -161,8 +161,16 @@ var getTypeEnum = getPropertyHandler(type_guards_1.isEnum, function (options) {
         return E.right(getGenerator(options).getTypeEnum(property.enum));
     };
 });
-var getTypeInteger = getPropertyHandler(type_guards_1.isInteger, function (options) { return function () { return E.right(getGenerator(options).getTypeInteger()); }; });
-var getTypeNumber = getPropertyHandler(type_guards_1.isNumber, function (options) { return function () { return E.right(getGenerator(options).getTypeNumber()); }; });
+var getTypeInteger = getPropertyHandler(type_guards_1.isInteger, function (options) {
+    return function (itemTyp) {
+        return E.right(getGenerator(options).getTypeInteger(itemTyp));
+    };
+});
+var getTypeNumber = getPropertyHandler(type_guards_1.isNumber, function (options) {
+    return function (itemTyp) {
+        return E.right(getGenerator(options).getTypeNumber(itemTyp));
+    };
+});
 var getTypeString = getPropertyHandler(type_guards_2.isString, function (options) {
     return function (itemType) {
         return E.right(getGenerator(options).getTypeString(itemType));

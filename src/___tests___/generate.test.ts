@@ -328,7 +328,7 @@ describe("getType", () => {
     describe("codecIoTs", () => {
       test("it returns integer", () => {
         expect(getType(optionsCodecIoTs)({ type: "integer" })).toEqual(
-          right("t.number")
+          right("IntegerC")
         );
       });
 
@@ -336,7 +336,7 @@ describe("getType", () => {
         test("it returns integer or null", () => {
           expect(
             getType(optionsCodecIoTs)({ type: "integer", nullable: true })
-          ).toEqual(right("t.union([t.number,t.null])"));
+          ).toEqual(right("t.union([IntegerC,t.null])"));
         });
       });
     });
