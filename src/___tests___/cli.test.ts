@@ -265,6 +265,84 @@ describe("cli", () => {
       });
     });
   });
+  describe("when Parser is missing", () => {
+    test("it prompts for the parser", async () => {
+      await cli([
+        "node",
+        "generate-types",
+        "--source",
+        "swagger_url",
+        "--exitOnInvalidType",
+        "--destination",
+        "core.3.4.0.d.ts",
+        "--type",
+        "TypeScript",
+      ])();
+      expect(prompt).toHaveBeenCalledTimes(1);
+      expect(prompt).toHaveBeenCalledWith([
+        {
+          type: "list",
+          name: "parser",
+          message: "Parser format",
+          choices: ["typescript", "babel", "flow", "babel-flow"],
+          default: "typescript",
+        },
+      ]);
+    });
+
+    describe("when user types a valid parser", () => {
+      test("it returns a config with the typed parser", async () => {
+        (prompt as unknown as jest.Mock).mockResolvedValue({
+          parser: "typescript",
+        });
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--destination",
+            "filename.d.ts",
+            "--exitOnInvalidType",
+            "--type",
+            "TypeScript",
+          ])()
+        ).toEqual(
+          E.right({
+            destination: "filename.d.ts",
+            source: "swagger_url",
+            exitOnInvalidType: true,
+            type: "TypeScript",
+            parser: "typescript",
+            patchSource: undefined,
+          })
+        );
+      });
+    });
+
+    describe("when user types an empty parser", () => {
+      test("it returns an error", async () => {
+        (prompt as unknown as jest.Mock).mockResolvedValue({
+          parser: "",
+        });
+        expect(
+          await cli([
+            "node",
+            "generate-types",
+            "--source",
+            "swagger_url",
+            "--destination",
+            "core.3.4.0.d.ts",
+            "--exitOnInvalidType",
+            "--type",
+            "TypeScript",
+            "--parser",
+            "",
+          ])()
+        ).toEqual(E.left(new Error("Parser is missing")));
+      });
+    });
+  });
 
   describe("when --exitOnInvalidType is missing", () => {
     test("it sets exitOnInvalidType=false", async () => {

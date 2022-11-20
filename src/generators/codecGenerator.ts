@@ -60,8 +60,7 @@ const safeSurroundEnum = (item: string): string => {
   return surround("t.literal('", "')")(item);
 };
 export const codecGenerator: Generator<PropertyModel> = {
-  getTypeString: (options?: StringOpt) => {
-    if (options == null) return "t.string";
+  getTypeString: (options: StringOpt) => {
     if (options.maxLength != null || options.minLength != null)
       return `StringLengthC(${options.minLength}, ${options.maxLength})`;
 

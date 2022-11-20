@@ -40,8 +40,6 @@ var safeSurroundEnum = function (item) {
 };
 exports.codecGenerator = {
     getTypeString: function (options) {
-        if (options == null)
-            return "t.string";
         if (options.maxLength != null || options.minLength != null)
             return "StringLengthC(" + options.minLength + ", " + options.maxLength + ")";
         if (options.pattern != null)
@@ -53,7 +51,8 @@ exports.codecGenerator = {
     getTypeBoolean: function () { return "t.boolean"; },
     getTypeEnum: function_1.flow(utils_1.map(safeSurroundEnum), getUnion),
     getTypeArray: function (itemType, options) {
-        if (options == null)
+        if (options == null ||
+            (options.maxItems == null && options.minItems == null))
             return utils_1.surround("t.array(", ")")(itemType);
         return utils_1.surround("MinMaxArrayC(", ", " + options.minItems + ", " + options.maxItems + ")")(itemType);
     },
@@ -68,11 +67,11 @@ exports.codecGenerator = {
     getTypeUnknown: function () { return "t.unknown"; },
     addHeader: function_1.flow(
     // add string length pattern
-    utils_1.prefix("function StringLengthC(min?: number, max?: number) {\n      return t.string.pipe(\n        new t.Type<string, string, string>(\n          'StringLengthC',\n          (i: unknown): i is string =>\n            t.string.is(i) &&\n            (min == null || min <= i.length) &&\n            (max == null || max >= i.length),\n          (i, c) => {\n            if (!t.string.is(i)) return t.failure(i, c);\n            if (min != null && i.length < min)\n              return t.failure(i, c, `${i} has length of: ${i.length} < ${min}`);\n            if (max != null && i.length > max)\n              return t.failure(i, c, `${i} has length of: ${i.length} > ${max}`);\n    \n            return t.success(i);\n          },\n          String\n        )\n      );\n    }"), 
+    utils_1.prefix("function StringLengthC(min?: number, max?: number) {\n      return t.string.pipe(\n        new t.Type<string, string, string>(\n          'StringLengthC',\n          (i: unknown): i is string =>\n            t.string.is(i) &&\n            (min == null || min <= i.length) &&\n            (max == null || max >= i.length),\n          (i, c) => {\n            if (!t.string.is(i)) return t.failure(i, c);\n            if (min != null && i.length < min)\n              return t.failure(i, c, `${i} has length of: ${i.length} < ${min}`);\n            if (max != null && i.length > max)\n              return t.failure(i, c, `${i} has length of: ${i.length} > ${max}`);\n    \n            return t.success(i);\n          },\n          String\n        )\n      );\n    };\n"), 
     // add string pattern
-    utils_1.prefix("function StringPatternC(pattern: string) {\n      return t.string.pipe(\n        new t.Type<string, string, string>(\n          'StringPatternC',\n          (i: unknown): i is string => t.string.is(i) && new RegExp(pattern).test(i),\n          (i, c) => {\n            if (!t.string.is(i)) return t.failure(i, c);\n            if (!new RegExp(pattern).test(i))\n              return t.failure(i, c, `${i} not in format: ${pattern}`);\n            return t.success(i);\n          },\n          String\n        )\n      );\n    }"), 
+    utils_1.prefix("function StringPatternC(pattern: string) {\n      return t.string.pipe(\n        new t.Type<string, string, string>(\n          'StringPatternC',\n          (i: unknown): i is string => t.string.is(i) && new RegExp(pattern).test(i),\n          (i, c) => {\n            if (!t.string.is(i)) return t.failure(i, c);\n            if (!new RegExp(pattern).test(i))\n              return t.failure(i, c, `${i} not in format: ${pattern}`);\n            return t.success(i);\n          },\n          String\n        )\n      );\n    };\n"), 
     //   // add MinMaxArrayType
-    utils_1.prefix("function MinMaxArrayC<C extends t.Mixed>(a: C, min?: number, max?: number) {\n        return t.array(a).pipe(\n          new t.Type<t.TypeOf<C>[], t.TypeOf<C>[], C[]>(\n            'MinMaxArrayC',\n            (u): u is t.TypeOf<C>[] =>\n              t.array(a).is(u) &&\n              (min ?? 0) <= u.length &&\n              (max == null || u.length <= max),\n            (i, c) => {\n              if (!t.array(a).is(i)) return t.failure(i, c);\n              if (min != null && i.length < min)\n                return t.failure(\n                  i,\n                  c,\n                  `Array length should be >= : ${min}, Got: ${i.length}`\n                );\n      \n              if (max != null && i.length > max)\n                return t.failure(\n                  i,\n                  c,\n                  `Array length should be <= : ${max}, Got: ${i.length}`\n                );\n      \n              return t.success(i);\n            },\n            t.identity\n          )\n        );\n      }"), utils_1.prefix('\n"use strict";\nimport * as t from "io-ts";'), utils_1.prefix("/* eslint-disable @typescript-eslint/camelcase */"), utils_1.prefix("/* eslint-disable @typescript-eslint/no-use-before-define */"), utils_1.prefix("/* eslint-disable no-var */")),
+    utils_1.prefix("function MinMaxArrayC<C extends t.Mixed>(a: C, min?: number, max?: number) {\n        return t.array(a).pipe(\n          new t.Type<t.TypeOf<C>[], t.TypeOf<C>[], C[]>(\n            'MinMaxArrayC',\n            (u): u is t.TypeOf<C>[] =>\n              t.array(a).is(u) &&\n              (min ?? 0) <= u.length &&\n              (max == null || u.length <= max),\n            (i, c) => {\n              if (!t.array(a).is(i)) return t.failure(i, c);\n              if (min != null && i.length < min)\n                return t.failure(\n                  i,\n                  c,\n                  `Array length should be >= : ${min}, Got: ${i.length}`\n                );\n      \n              if (max != null && i.length > max)\n                return t.failure(\n                  i,\n                  c,\n                  `Array length should be <= : ${max}, Got: ${i.length}`\n                );\n      \n              return t.success(i);\n            },\n            t.identity\n          )\n        );\n      };\n"), utils_1.prefix('\n"use strict";\nimport * as t from "io-ts";\n'), utils_1.prefix("/* eslint-disable @typescript-eslint/camelcase */\n"), utils_1.prefix("/* eslint-disable @typescript-eslint/no-use-before-define */\n"), utils_1.prefix("/* eslint-disable no-var */\n")),
     combineTypes: function_1.flow(utils_1.join(";")),
     getTypeDefinition: function (key) {
         return utils_1.surround("export const " + utils_1.toPascalCase(key) + ":t.Type<" + utils_1.toPascalCase(key) + ">=t.recursion('" + utils_1.toPascalCase(key) + "',()=>", ")");

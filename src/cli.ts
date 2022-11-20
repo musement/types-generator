@@ -72,7 +72,7 @@ function getQuestions(
       name: "parser",
       message: "Parser format",
       choices: ["typescript", "babel", "flow", "babel-flow"],
-      default: "typeScript",
+      default: "typescript",
     });
   }
 

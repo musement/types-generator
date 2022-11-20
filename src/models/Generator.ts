@@ -10,12 +10,12 @@ export interface ArrayOpt {
 }
 
 export interface Generator<T = string> {
-  getTypeString: (options?: StringOpt) => string;
+  getTypeString: (options: StringOpt) => string;
   getTypeNumber: () => string;
   getTypeInteger: () => string;
   getTypeBoolean: () => string;
   getTypeEnum: (enumValues: string[]) => string;
-  getTypeArray: (itemType: string, options?: ArrayOpt) => string;
+  getTypeArray: (itemType: string, options: ArrayOpt) => string;
   getTypeAnyOf: (values: string[]) => string;
   getTypeOneOf: (values: string[]) => string;
   getTypeAllOf: (array: string[]) => string;
