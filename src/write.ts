@@ -3,7 +3,6 @@ import prettier, { BuiltInParserName, CustomParser } from "prettier";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/pipeable";
 
-// @TODO: remove hardcode
 function prettify(
   types: string,
   parser?: BuiltInParserName | CustomParser

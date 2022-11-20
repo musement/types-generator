@@ -29,5 +29,5 @@ exports.typeScriptGenerator = {
     addHeader: utils_1.prefix('"use strict";\n'),
     combineTypes: utils_1.join(";"),
     getTypeDefinition: function (key) { return utils_1.prefix("export type " + utils_1.toPascalCase(key) + "="); },
-    makeTypeNullable: function_1.flow(utils_1.suffix("|null"), utils_1.surround("(", ")"))
+    makeTypeNullable: function_1.flow(utils_1.suffix("|null"), utils_1.surround("(", ")")),
 };

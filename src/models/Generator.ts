@@ -1,10 +1,12 @@
 export interface StringOpt {
   pattern?: string;
+  minLength?: number;
+  maxLength?: number;
 }
 
 export interface ArrayOpt {
-  minLength: number;
-  maxLength: number;
+  minItems?: number;
+  maxItems?: number;
 }
 
 export interface Generator<T = string> {

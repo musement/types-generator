@@ -78,3 +78,9 @@ npm run test
 ## Using the issue tracker
 
 The issue tracker is the preferred channel for `bug reports` and `features requests`.
+
+
+# Example
+```
+ts-node src/index.ts --source ./schema.yaml --type CodecIoTs --destination ./out/index.ts --parser typescrip
+```

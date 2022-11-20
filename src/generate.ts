@@ -155,17 +155,13 @@ const getTypeArray = getPropertyHandler(
   (options) =>
     (property): TypeResult => {
       // wrap with array length if have min/max length
-      const minLength = property.minItems ?? 0;
-      const maxLength = property.maxItems ?? Number.MAX_VALUE;
+      const { items, ...rest } = property;
 
       return pipe(
-        property.items,
+        items,
         getType(options),
         E.map((itemType: string) =>
-          getGenerator(options).getTypeArray(itemType, {
-            maxLength,
-            minLength,
-          })
+          getGenerator(options).getTypeArray(itemType, rest)
         )
       );
     }
