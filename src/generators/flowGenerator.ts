@@ -8,7 +8,7 @@ import {
   prefix,
   suffix,
   surround,
-  toPascalCase
+  toPascalCase,
 } from "../services/utils";
 const safeSurroundEnum = (item: string): string => {
   if (item.indexOf("'") !== -1) {
@@ -39,6 +39,6 @@ export const flowGenerator: Generator = {
   getTypeUnknown: constant("mixed"),
   addHeader: prefix("// @flow strict\n"),
   combineTypes: join(";"),
-  getTypeDefinition: key => prefix(`export type ${toPascalCase(key)}=`),
-  makeTypeNullable: flow(suffix("|null"), surround("(", ")"))
+  getTypeDefinition: (key) => prefix(`export type ${toPascalCase(key)}=`),
+  makeTypeNullable: flow(suffix("|null"), surround("(", ")")),
 };

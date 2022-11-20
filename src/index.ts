@@ -10,7 +10,7 @@ const exec = flow(
   cli,
   TE.chain(program),
   TE.fold(
-    error => T.of(console.error(error)),
+    (error) => T.of(console.error(error)),
     () => T.of(console.log("success"))
   )
 );

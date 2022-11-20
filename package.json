@@ -11,6 +11,7 @@
     "build:lib": "tsc -p ./tsconfig-lib.json --declaration",
     "build:lib:watch": "tsc -p ./tsconfig-lib.json  --declaration --watch",
     "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "typescript:check": "tsc -p . --noEmit",
     "release": "standard-version -a"
   },
@@ -56,7 +57,7 @@
     "inquirer": "^7.3.3",
     "io-ts": "^2.2.16",
     "js-yaml": "^3.14.1",
-    "prettier": "^1.19.1"
+    "prettier": "^2.7.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.0",

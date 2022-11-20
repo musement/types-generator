@@ -18,20 +18,20 @@ describe("program", () => {
   describe("when everything is running smoothly", () => {
     test("it return a task that writes the file", async () => {
       const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.right("generated types"));
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => TE.right(undefined));
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: undefined
+        patchSource: undefined,
       });
       const result = await task();
 
@@ -39,7 +39,7 @@ describe("program", () => {
       expect(actualGetSwagger).toHaveBeenCalledWith("swagger_url");
       expect(generate).toHaveBeenCalledWith({
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
@@ -53,22 +53,22 @@ describe("program", () => {
       const actualGetSwagger = jest.fn(() =>
         T.of(E.left(new Error("download error")))
       );
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn();
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
-      const actualWrite = jest.fn(() => (): T.Task<E.Either<never, void>> =>
-        TE.right(undefined)
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
+      const actualWrite = jest.fn(
+        () => (): T.Task<E.Either<never, void>> => TE.right(undefined)
       );
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: undefined
+        patchSource: undefined,
       });
       const result = await task();
 
@@ -84,20 +84,20 @@ describe("program", () => {
   describe("when there's an error generating the type definitions", () => {
     test("it return a task containing the error", async () => {
       const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.left(new Error("types error")));
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => TE.right(undefined));
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: undefined
+        patchSource: undefined,
       });
       const result = await task();
 
@@ -105,7 +105,7 @@ describe("program", () => {
       expect(actualGetSwagger).toHaveBeenCalledWith("swagger_url");
       expect(generate).toHaveBeenCalledWith({
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
@@ -117,20 +117,20 @@ describe("program", () => {
   describe("when there's an error writing the file", () => {
     test("it return a task containing the error", async () => {
       const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.right("generated types"));
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => T.of(E.left(new Error("write error"))));
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
 
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: undefined
+        patchSource: undefined,
       });
       const result = await task();
 
@@ -138,7 +138,7 @@ describe("program", () => {
       expect(actualGetSwagger).toHaveBeenCalledWith("swagger_url");
       expect(generate).toHaveBeenCalledWith({
         exitOnInvalidType: true,
-        type: "Flow"
+        type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
       expect(write).toHaveBeenCalledWith("filename");
@@ -150,19 +150,19 @@ describe("program", () => {
   describe("when patchSource is a string", () => {
     test("it calls getSwagger with left(strings)", async () => {
       const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.right("generated types"));
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => TE.right(undefined));
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: "urlOrPath"
+        patchSource: "urlOrPath",
       });
       await task();
 
@@ -173,19 +173,19 @@ describe("program", () => {
   describe("when patchSource is an object", () => {
     test("it calls getSwagger with right(object)", async () => {
       const actualGetSwagger = jest.fn(() => TE.right({ openapi: "3.0.0" }));
-      ((getSwagger as unknown) as jest.Mock).mockReturnValueOnce(
+      (getSwagger as unknown as jest.Mock).mockReturnValueOnce(
         actualGetSwagger
       );
       const actualGenerate = jest.fn(() => E.right("generated types"));
-      ((generate as unknown) as jest.Mock).mockReturnValueOnce(actualGenerate);
+      (generate as unknown as jest.Mock).mockReturnValueOnce(actualGenerate);
       const actualWrite = jest.fn(() => TE.right(undefined));
-      ((write as unknown) as jest.Mock).mockReturnValueOnce(actualWrite);
+      (write as unknown as jest.Mock).mockReturnValueOnce(actualWrite);
       const task = program({
         source: "swagger_url",
         destination: "filename",
         exitOnInvalidType: true,
         type: "Flow",
-        patchSource: {}
+        patchSource: {},
       });
       await task();
 

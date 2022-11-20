@@ -5,6 +5,7 @@ import * as T from "fp-ts/lib/Task";
 import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { CliConfig } from "./models/CliConfig";
+import { BuiltInParserName } from "prettier";
 
 function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
   const args = arg(
@@ -12,15 +13,17 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
       "--destination": String,
       "--source": String,
       "--type": String,
+      "--parser": String,
       "--exitOnInvalidType": Boolean,
       "--patchSource": String,
       "-d": "--destination",
       "-s": "--source",
       "-t": "--type",
-      "-e": "--exitOnInvalidType"
+      "-p": "--parser",
+      "-e": "--exitOnInvalidType",
     },
     {
-      argv: rawArgs.slice(2)
+      argv: rawArgs.slice(2),
     }
   );
   return {
@@ -28,7 +31,8 @@ function parseArgumentsIntoOptions(rawArgs: string[]): Partial<CliConfig> {
     source: args["--source"],
     exitOnInvalidType: args["--exitOnInvalidType"] || false,
     type: args["--type"] as "Flow" | "TypeScript" | undefined,
-    patchSource: args["--patchSource"]
+    parser: args["--parser"] as BuiltInParserName,
+    patchSource: args["--patchSource"],
   };
 }
 
@@ -40,7 +44,7 @@ function getQuestions(
     questions.push({
       type: "string",
       name: "source",
-      message: "Swagger's url or path"
+      message: "Swagger's url or path",
     });
   }
 
@@ -48,7 +52,7 @@ function getQuestions(
     questions.push({
       type: "string",
       name: "destination",
-      message: "Name of the file"
+      message: "Name of the file",
     });
   }
 
@@ -58,7 +62,17 @@ function getQuestions(
       name: "type",
       message: "Types to generate",
       choices: ["TypeScript", "Flow"],
-      default: "TypeScript"
+      default: "TypeScript",
+    });
+  }
+
+  if (!options.parser) {
+    questions.push({
+      type: "list",
+      name: "parser",
+      message: "Parser format",
+      choices: ["typescript", "babel", "flow", "babel-flow"],
+      default: "typeScript",
     });
   }
 
@@ -74,6 +88,9 @@ function checkOptions(answers: CliConfig): E.Either<Error, CliConfig> {
   }
   if (!answers.type) {
     return E.left(new Error("Type is missing"));
+  }
+  if (!answers.parser) {
+    return E.left(new Error("Parser is missing"));
   }
   return E.right(answers);
 }
@@ -91,7 +108,7 @@ function promptForMissingOptions(
     options,
     getQuestions,
     getAnswers,
-    T.map(answers => ({ ...options, ...answers })),
+    T.map((answers) => ({ ...options, ...answers })),
     T.map(checkOptions)
   );
 }

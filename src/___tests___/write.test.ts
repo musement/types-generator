@@ -3,13 +3,13 @@ import { right, left } from "fp-ts/lib/Either";
 import fs from "fs";
 
 jest.mock("prettier", () => ({
-  format: jest.fn(content => `prettified<${content}>`)
+  format: jest.fn((content) => `prettified<${content}>`),
 }));
 jest.mock("fs", () => ({
   writeFile: jest.fn((filename, content, callback) => {
     callback();
     return Promise.resolve();
-  })
+  }),
 }));
 
 describe("write", () => {
@@ -28,7 +28,7 @@ describe("write", () => {
 
   describe("when there's an error writing on filesystem", () => {
     test("it returns a task containing left(Error)", async () => {
-      ((fs.writeFile as unknown) as jest.Mock).mockImplementationOnce(
+      (fs.writeFile as unknown as jest.Mock).mockImplementationOnce(
         (filename, content, callback) => {
           callback(new Error("error"));
           return Promise.resolve();
