@@ -32,6 +32,7 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: undefined,
+        parser: "typescript",
       });
       const result = await task();
 
@@ -42,7 +43,7 @@ describe("program", () => {
         type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
-      expect(write).toHaveBeenCalledWith("filename");
+      expect(write).toHaveBeenCalledWith("filename", "typescript");
       expect(actualWrite).toHaveBeenCalledWith("generated types");
       expect(result).toEqual(E.right(undefined));
     });
@@ -69,13 +70,14 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: undefined,
+        parser: "typescript",
       });
       const result = await task();
 
       expect(getSwagger).toHaveBeenCalledWith(undefined);
       expect(actualGetSwagger).toHaveBeenCalledWith("swagger_url");
       expect(actualGenerate).not.toHaveBeenCalled();
-      expect(write).toHaveBeenCalledWith("filename");
+      expect(write).toHaveBeenCalledWith("filename", "typescript");
       expect(actualWrite).not.toHaveBeenCalled();
       expect(result).toEqual(E.left(new Error("download error")));
     });
@@ -98,6 +100,7 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: undefined,
+        parser: "typescript",
       });
       const result = await task();
 
@@ -108,7 +111,7 @@ describe("program", () => {
         type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
-      expect(write).toHaveBeenCalledWith("filename");
+      expect(write).toHaveBeenCalledWith("filename", "typescript");
       expect(actualWrite).not.toHaveBeenCalled();
       expect(result).toEqual(E.left(new Error("types error")));
     });
@@ -131,6 +134,7 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: undefined,
+        parser: "typescript",
       });
       const result = await task();
 
@@ -141,7 +145,7 @@ describe("program", () => {
         type: "Flow",
       });
       expect(actualGenerate).toHaveBeenCalledWith({ openapi: "3.0.0" });
-      expect(write).toHaveBeenCalledWith("filename");
+      expect(write).toHaveBeenCalledWith("filename", "typescript");
       expect(actualWrite).toHaveBeenCalledWith("generated types");
       expect(result).toEqual(E.left(new Error("write error")));
     });
@@ -163,6 +167,7 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: "urlOrPath",
+        parser: "typescript",
       });
       await task();
 
@@ -186,6 +191,7 @@ describe("program", () => {
         exitOnInvalidType: true,
         type: "Flow",
         patchSource: {},
+        parser: "typescript",
       });
       await task();
 

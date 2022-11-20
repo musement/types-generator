@@ -908,7 +908,6 @@ describe("generate", () => {
   describe("when the swagger is valid", () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const swagger = require("./__mocks__/openapi.json");
-
     test("it matches the snapshot", () => {
       expect(
         generate({ ...optionsTypeScript, exitOnInvalidType: false })(swagger)
@@ -917,9 +916,11 @@ describe("generate", () => {
       expect(
         generate({ ...optionsFlow, exitOnInvalidType: false })(swagger)
       ).toMatchSnapshot();
-
       expect(
-        generate({ ...optionsCodecIoTs, exitOnInvalidType: false })(swagger)
+        generate({
+          ...optionsCodecIoTs,
+          exitOnInvalidType: false,
+        })(swagger)
       ).toMatchSnapshot();
     });
   });

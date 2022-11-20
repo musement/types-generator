@@ -32,6 +32,8 @@ describe("cli", () => {
           "TypeScript",
           "--patchSource",
           "patch_source",
+          "--parser",
+          "typescript",
         ])()
       ).toEqual(
         E.right({
@@ -40,6 +42,7 @@ describe("cli", () => {
           exitOnInvalidType: true,
           type: "TypeScript",
           patchSource: "patch_source",
+          parser: "typescript",
         })
       );
     });
@@ -55,6 +58,8 @@ describe("cli", () => {
         "--exitOnInvalidType",
         "--type",
         "TypeScript",
+        "--parser",
+        "typescript",
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([
@@ -80,6 +85,8 @@ describe("cli", () => {
             "--exitOnInvalidType",
             "--type",
             "Flow",
+            "--parser",
+            "typescript",
           ])()
         ).toEqual(
           E.right({
@@ -87,6 +94,7 @@ describe("cli", () => {
             source: "swagger_url",
             exitOnInvalidType: true,
             type: "Flow",
+            parser: "typescript",
           })
         );
       });
@@ -104,6 +112,8 @@ describe("cli", () => {
             "--destination",
             "filename.d.ts",
             "--exitOnInvalidType",
+            "--parser",
+            "typescript",
           ])()
         ).toEqual(E.left(new Error("Source is missing")));
       });
@@ -120,6 +130,8 @@ describe("cli", () => {
         "--exitOnInvalidType",
         "--type",
         "TypeScript",
+        "--parser",
+        "typescript",
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([
@@ -145,6 +157,8 @@ describe("cli", () => {
             "--exitOnInvalidType",
             "--type",
             "TypeScript",
+            "--parser",
+            "typescript",
           ])()
         ).toEqual(
           E.right({
@@ -152,6 +166,7 @@ describe("cli", () => {
             source: "swagger_url",
             exitOnInvalidType: true,
             type: "TypeScript",
+            parser: "typescript",
           })
         );
       });
@@ -185,6 +200,8 @@ describe("cli", () => {
         "--exitOnInvalidType",
         "--destination",
         "core.3.4.0.d.ts",
+        "--parser",
+        "typescript",
       ])();
       expect(prompt).toHaveBeenCalledTimes(1);
       expect(prompt).toHaveBeenCalledWith([
@@ -212,6 +229,8 @@ describe("cli", () => {
             "--destination",
             "filename.d.ts",
             "--exitOnInvalidType",
+            "--parser",
+            "typescript",
           ])()
         ).toEqual(
           E.right({
@@ -219,6 +238,7 @@ describe("cli", () => {
             source: "swagger_url",
             exitOnInvalidType: true,
             type: "TypeScript",
+            parser: "typescript",
           })
         );
       });
@@ -238,6 +258,8 @@ describe("cli", () => {
             "--destination",
             "core.3.4.0.d.ts",
             "--exitOnInvalidType",
+            "--parser",
+            "typescript",
           ])()
         ).toEqual(E.left(new Error("Type is missing")));
       });
@@ -257,6 +279,8 @@ describe("cli", () => {
           "filename.d.ts",
           "--type",
           "TypeScript",
+          "--parser",
+          "typescript",
         ])()
       ).toEqual(
         E.right({
@@ -264,6 +288,7 @@ describe("cli", () => {
           source: "swagger_url",
           exitOnInvalidType: false,
           type: "TypeScript",
+          parser: "typescript",
         })
       );
     });

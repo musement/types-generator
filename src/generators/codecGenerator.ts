@@ -75,7 +75,11 @@ export const codecGenerator: Generator<PropertyModel> = {
   getTypeBoolean: () => "t.boolean",
   getTypeEnum: flow(map(safeSurroundEnum), getUnion),
   getTypeArray: (itemType: string, options?: ArrayOpt) => {
-    if (options == null) return surround("t.array(", ")")(itemType);
+    if (
+      options == null ||
+      (options.maxItems == null && options.minItems == null)
+    )
+      return surround("t.array(", ")")(itemType);
     return surround(
       "MinMaxArrayC(",
       `, ${options.minItems}, ${options.maxItems})`
@@ -115,7 +119,7 @@ export const codecGenerator: Generator<PropertyModel> = {
           String
         )
       );
-    }`),
+    };\n`),
     // add string pattern
     prefix(`function StringPatternC(pattern: string) {
       return t.string.pipe(
@@ -131,7 +135,7 @@ export const codecGenerator: Generator<PropertyModel> = {
           String
         )
       );
-    }`),
+    };\n`),
     //   // add MinMaxArrayType
     prefix(
       `function MinMaxArrayC<C extends t.Mixed>(a: C, min?: number, max?: number) {
@@ -163,12 +167,12 @@ export const codecGenerator: Generator<PropertyModel> = {
             t.identity
           )
         );
-      }`
+      };\n`
     ),
-    prefix('\n"use strict";\nimport * as t from "io-ts";'),
-    prefix("/* eslint-disable @typescript-eslint/camelcase */"),
-    prefix("/* eslint-disable @typescript-eslint/no-use-before-define */"),
-    prefix("/* eslint-disable no-var */")
+    prefix('\n"use strict";\nimport * as t from "io-ts";\n'),
+    prefix("/* eslint-disable @typescript-eslint/camelcase */\n"),
+    prefix("/* eslint-disable @typescript-eslint/no-use-before-define */\n"),
+    prefix("/* eslint-disable no-var */\n")
   ),
   combineTypes: flow(join(";")),
   getTypeDefinition: (key) =>
