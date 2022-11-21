@@ -59,8 +59,11 @@ const safeSurroundEnum = (item: string): string => {
 };
 export const codecGenerator: Generator<PropertyModel> = {
   getTypeString: (options: StringOpt) => {
-    if (options.maxLength != null || options.minLength != null)
+    if (options.maxLength != null || options.minLength != null) {
+      if (options.pattern != null)
+        return `StringPatternWithLengthC(\`${options.pattern}\`, ${options.minLength}, ${options.maxLength})`;
       return `StringLengthC(${options.minLength}, ${options.maxLength})`;
+    }
 
     if (options.pattern != null)
       return surround("StringPatternC(`", "`)")(options.pattern);
@@ -183,9 +186,9 @@ export const codecGenerator: Generator<PropertyModel> = {
           String
         )
       );
-    };\n`),
+    };\n
     // add string pattern
-    prefix(`function StringPatternC(pattern: string) {
+    function StringPatternC(pattern: string) {
       return t.string.pipe(
         new t.Type<string, string, string>(
           'StringPatternC',
@@ -199,7 +202,12 @@ export const codecGenerator: Generator<PropertyModel> = {
           String
         )
       );
-    };\n`),
+    };\n
+
+    function StringPatternWithLengthC(pattern: string, min?: number, max?: number) {
+      return StringPatternC(pattern).pipe(StringLengthC(min, max));
+    };\n
+    `),
     //   // add MinMaxArrayType
     prefix(
       `function MinMaxArrayC<C extends t.Mixed>(a: C, min?: number, max?: number) {
