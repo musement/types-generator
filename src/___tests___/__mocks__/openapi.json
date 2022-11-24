@@ -13160,6 +13160,8 @@
                     },
                     "value": {
                         "type": "string",
+                        "pattern": "[A-Z]\\w+",
+                        "minLength": 4,
                         "example": "Linus"
                     }
                 },
