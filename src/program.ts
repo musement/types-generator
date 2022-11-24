@@ -21,12 +21,13 @@ export function program({
   destination,
   exitOnInvalidType,
   type,
-  patchSource
+  patchSource,
+  parser,
 }: ProgramConfig): TE.TaskEither<Error, void> {
   return pipe(
     source,
     getSwagger(sourceToEither(patchSource)),
     TE.chainEitherK(generate({ exitOnInvalidType, type })),
-    TE.chain(write(destination))
+    TE.chain(write(destination, parser))
   );
 }

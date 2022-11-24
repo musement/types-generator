@@ -1,10 +1,23 @@
+export interface StringOpt {
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+}
+export interface ArrayOpt {
+    minItems?: number;
+    maxItems?: number;
+}
+export interface NumberOpt {
+    minimum?: number;
+    maximum?: number;
+}
 export interface Generator<T = string> {
-    getTypeString: () => string;
-    getTypeNumber: () => string;
-    getTypeInteger: () => string;
+    getTypeString: (options: StringOpt) => string;
+    getTypeNumber: (options: NumberOpt) => string;
+    getTypeInteger: (options: NumberOpt) => string;
     getTypeBoolean: () => string;
     getTypeEnum: (enumValues: string[]) => string;
-    getTypeArray: (itemType: string) => string;
+    getTypeArray: (itemType: string, options: ArrayOpt) => string;
     getTypeAnyOf: (values: string[]) => string;
     getTypeOneOf: (values: string[]) => string;
     getTypeAllOf: (array: string[]) => string;

@@ -1,14 +1,17 @@
 import fs from "fs";
-import prettier from "prettier";
+import prettier, { BuiltInParserName, CustomParser } from "prettier";
 import * as TE from "fp-ts/lib/TaskEither";
 import { flow } from "fp-ts/lib/function";
 
-function prettify(types: string): string {
-  return prettier.format(types);
+function prettify(
+  types: string,
+  parser?: BuiltInParserName | CustomParser
+): string {
+  return prettier.format(types, { parser: parser });
 }
 
 function writeToFile(filename: string) {
-  return function(types: string): TE.TaskEither<Error, void> {
+  return function (types: string): TE.TaskEither<Error, void> {
     return TE.taskify<string, string, Error, void>(fs.writeFile)(
       filename,
       types
@@ -17,8 +20,9 @@ function writeToFile(filename: string) {
 }
 
 function write(
-  filename: string
+  filename: string,
+  parser?: BuiltInParserName | CustomParser
 ): (types: string) => TE.TaskEither<Error, void> {
-  return flow(prettify, writeToFile(filename));
+  return flow((types) => prettify(types, parser), writeToFile(filename));
 }
 export { write };

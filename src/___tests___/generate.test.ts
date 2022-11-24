@@ -21,38 +21,38 @@ describe("getDefinitions", () => {
                   code: {
                     description: "Error code",
                     type: "string",
-                    example: "1401"
+                    example: "1401",
                   },
                   message: {
                     description: "Error message",
                     type: "string",
                     example:
-                      "Full authentication is required to access this resource."
+                      "Full authentication is required to access this resource.",
                   },
                   data: {
                     description: "Extra information about the error",
-                    type: "string"
-                  }
+                    type: "string",
+                  },
                 },
-                type: "object"
+                type: "object",
               },
               PassengersInfoForm: {
                 properties: {
                   number: {
                     description: "Number of passengers",
-                    type: "integer"
+                    type: "integer",
                   },
                   fields: {
                     type: "array",
                     items: {
-                      $ref: "#/components/schemas/FormFieldDefinition"
-                    }
-                  }
+                      $ref: "#/components/schemas/FormFieldDefinition",
+                    },
+                  },
                 },
-                type: "object"
-              }
-            }
-          }
+                type: "object",
+              },
+            },
+          },
         })
       ).toEqual(
         right({
@@ -61,36 +61,36 @@ describe("getDefinitions", () => {
               code: {
                 description: "Error code",
                 type: "string",
-                example: "1401"
+                example: "1401",
               },
               message: {
                 description: "Error message",
                 type: "string",
                 example:
-                  "Full authentication is required to access this resource."
+                  "Full authentication is required to access this resource.",
               },
               data: {
                 description: "Extra information about the error",
-                type: "string"
-              }
+                type: "string",
+              },
             },
-            type: "object"
+            type: "object",
           },
           PassengersInfoForm: {
             properties: {
               number: {
                 description: "Number of passengers",
-                type: "integer"
+                type: "integer",
               },
               fields: {
                 type: "array",
                 items: {
-                  $ref: "#/components/schemas/FormFieldDefinition"
-                }
-              }
+                  $ref: "#/components/schemas/FormFieldDefinition",
+                },
+              },
             },
-            type: "object"
-          }
+            type: "object",
+          },
         })
       );
     });
@@ -162,9 +162,9 @@ describe("getType", () => {
         expect(
           getType(optionsTypeScript)({
             type: "string",
-            enum: ["text", "date", "number"]
+            enum: ["text", "date", "number", "not's error"],
           })
-        ).toEqual(right("'text'|'date'|'number'"));
+        ).toEqual(right("'text'|'date'|'number'|\"not's error\""));
       });
 
       describe("when the property is nullable", () => {
@@ -173,7 +173,7 @@ describe("getType", () => {
             getType(optionsTypeScript)({
               type: "string",
               enum: ["text", "date", "number"],
-              nullable: true
+              nullable: true,
             })
           ).toEqual(right("('text'|'date'|'number'|null)"));
         });
@@ -185,7 +185,7 @@ describe("getType", () => {
         expect(
           getType(optionsFlow)({
             type: "string",
-            enum: ["text", "date", "number"]
+            enum: ["text", "date", "number"],
           })
         ).toEqual(right("'text'|'date'|'number'"));
       });
@@ -195,10 +195,10 @@ describe("getType", () => {
           expect(
             getType(optionsFlow)({
               type: "string",
-              enum: ["text", "date", "number"],
-              nullable: true
+              enum: ["text", "date", "number", "not's error"],
+              nullable: true,
             })
-          ).toEqual(right("('text'|'date'|'number'|null)"));
+          ).toEqual(right("('text'|'date'|'number'|\"not's error\"|null)"));
         });
       });
     });
@@ -208,11 +208,11 @@ describe("getType", () => {
         expect(
           getType(optionsCodecIoTs)({
             type: "string",
-            enum: ["text", "date", "number"]
+            enum: ["text", "date", "number", "not's error"],
           })
         ).toEqual(
           right(
-            "t.union([t.literal('text'),t.literal('date'),t.literal('number')])"
+            "t.union([t.literal('text'),t.literal('date'),t.literal('number'),t.literal(\"not's error\")])"
           )
         );
       });
@@ -222,7 +222,7 @@ describe("getType", () => {
           expect(
             getType(optionsCodecIoTs)({
               type: "string",
-              enum: ["text"]
+              enum: ["text"],
             })
           ).toEqual(right("t.literal('text')"));
         });
@@ -234,7 +234,7 @@ describe("getType", () => {
             getType(optionsCodecIoTs)({
               type: "string",
               enum: ["text", "date", "number"],
-              nullable: true
+              nullable: true,
             })
           ).toEqual(
             right(
@@ -328,7 +328,7 @@ describe("getType", () => {
     describe("codecIoTs", () => {
       test("it returns integer", () => {
         expect(getType(optionsCodecIoTs)({ type: "integer" })).toEqual(
-          right("t.number")
+          right("IntegerC")
         );
       });
 
@@ -336,7 +336,7 @@ describe("getType", () => {
         test("it returns integer or null", () => {
           expect(
             getType(optionsCodecIoTs)({ type: "integer", nullable: true })
-          ).toEqual(right("t.union([t.number,t.null])"));
+          ).toEqual(right("t.union([IntegerC,t.null])"));
         });
       });
     });
@@ -346,7 +346,7 @@ describe("getType", () => {
     test("it returns the referenced type", () => {
       expect(
         getType(optionsTypeScript)({
-          $ref: "#/components/schemas/ExtraCustomerDataField"
+          $ref: "#/components/schemas/ExtraCustomerDataField",
         })
       ).toEqual(right("ExtraCustomerDataField"));
     });
@@ -356,7 +356,7 @@ describe("getType", () => {
         expect(
           getType(optionsTypeScript)({
             $ref: "#/components/schemas/ExtraCustomerDataField",
-            nullable: true
+            nullable: true,
           })
         ).toEqual(right("(ExtraCustomerDataField|null)"));
       });
@@ -366,7 +366,7 @@ describe("getType", () => {
       test("it converts the name to PascalCase", () => {
         expect(
           getType(optionsTypeScript)({
-            $ref: "#/components/schemas/extra-customer-data-field"
+            $ref: "#/components/schemas/extra-customer-data-field",
           })
         ).toEqual(right("ExtraCustomerDataField"));
       });
@@ -376,7 +376,7 @@ describe("getType", () => {
       test("it returns the referenced type", () => {
         expect(
           getType(optionsTypeScript)({
-            $ref: "#/components/schemas/ExtraCustomerDataField"
+            $ref: "#/components/schemas/ExtraCustomerDataField",
           })
         ).toEqual(right("ExtraCustomerDataField"));
       });
@@ -386,7 +386,7 @@ describe("getType", () => {
           expect(
             getType(optionsCodecIoTs)({
               $ref: "#/components/schemas/ExtraCustomerDataField",
-              nullable: true
+              nullable: true,
             })
           ).toEqual(right("t.union([ExtraCustomerDataField,t.null])"));
         });
@@ -396,7 +396,7 @@ describe("getType", () => {
         test("it converts the name to PascalCase", () => {
           expect(
             getType(optionsCodecIoTs)({
-              $ref: "#/components/schemas/extra-customer-data-field"
+              $ref: "#/components/schemas/extra-customer-data-field",
             })
           ).toEqual(right("ExtraCustomerDataField"));
         });
@@ -410,8 +410,8 @@ describe("getType", () => {
         getType(optionsTypeScript)({
           type: "array",
           items: {
-            $ref: "#/components/schemas/FormFieldDefinition"
-          }
+            $ref: "#/components/schemas/FormFieldDefinition",
+          },
         })
       ).toEqual(right("Array<FormFieldDefinition>"));
     });
@@ -423,9 +423,9 @@ describe("getType", () => {
             type: "array",
             items: {
               $ref: "#/components/schemas/FormFieldDefinition",
-              nullable: true
+              nullable: true,
             },
-            nullable: true
+            nullable: true,
           })
         ).toEqual(right("(Array<(FormFieldDefinition|null)>|null)"));
       });
@@ -437,8 +437,8 @@ describe("getType", () => {
           getType(optionsCodecIoTs)({
             type: "array",
             items: {
-              $ref: "#/components/schemas/FormFieldDefinition"
-            }
+              $ref: "#/components/schemas/FormFieldDefinition",
+            },
           })
         ).toEqual(right("t.array(FormFieldDefinition)"));
       });
@@ -450,9 +450,9 @@ describe("getType", () => {
               type: "array",
               items: {
                 $ref: "#/components/schemas/FormFieldDefinition",
-                nullable: true
+                nullable: true,
               },
-              nullable: true
+              nullable: true,
             })
           ).toEqual(
             right(
@@ -471,12 +471,12 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             allOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
-                $ref: "#/components/schemas/PostCart"
-              }
-            ]
+                $ref: "#/components/schemas/PostCart",
+              },
+            ],
           })
         ).toEqual(right("PostCartItem&PostCart"));
       });
@@ -488,12 +488,12 @@ describe("getType", () => {
           getType(optionsFlow)({
             allOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
-                $ref: "#/components/schemas/PostCart"
-              }
-            ]
+                $ref: "#/components/schemas/PostCart",
+              },
+            ],
           })
         ).toEqual(right("{|...PostCartItem,...PostCart|}"));
       });
@@ -505,13 +505,13 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             allOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
-              }
+                $ref: "#/components/schemas/PostCartItem",
+              },
             ],
             type: "object",
             properties: {
-              itemUuid: { type: "string" }
-            }
+              itemUuid: { type: "string" },
+            },
           } as any)
         ).toEqual(right('PostCartItem&{"itemUuid"?:string}'));
       });
@@ -523,28 +523,28 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             allOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: true
+            nullable: true,
           })
         ).toEqual(right("(PostCartItem&(PostCart|null)|null)"));
         expect(
           getType(optionsTypeScript)({
             allOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: false
+            nullable: false,
           })
         ).toEqual(right("PostCartItem&(PostCart|null)"));
       });
@@ -556,8 +556,8 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             allOf: [
               { $ref: "#/components/schemas/PostCartItem" },
-              { type: "string" }
-            ]
+              { type: "string" },
+            ],
           })
         ).toEqual(
           left(
@@ -576,12 +576,12 @@ describe("getType", () => {
         getType(optionsTypeScript)({
           anyOf: [
             {
-              $ref: "#/components/schemas/PostCartItem"
+              $ref: "#/components/schemas/PostCartItem",
             },
             {
-              $ref: "#/components/schemas/PostCart"
-            }
-          ]
+              $ref: "#/components/schemas/PostCart",
+            },
+          ],
         })
       ).toEqual(right("PostCartItem|PostCart"));
     });
@@ -592,13 +592,13 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             anyOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
-              }
+                $ref: "#/components/schemas/PostCartItem",
+              },
             ],
             type: "object",
             properties: {
-              itemUuid: { type: "string" }
-            }
+              itemUuid: { type: "string" },
+            },
           } as any)
         ).toEqual(right('PostCartItem|{"itemUuid"?:string}'));
       });
@@ -610,28 +610,28 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             anyOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: true
+            nullable: true,
           })
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
           getType(optionsTypeScript)({
             anyOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: false
+            nullable: false,
           })
         ).toEqual(right("PostCartItem|(PostCart|null)"));
       });
@@ -643,8 +643,8 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             anyOf: [
               { type: "first invalid type" } as never,
-              { type: "second invalid type" } as never
-            ]
+              { type: "second invalid type" } as never,
+            ],
           })
         ).toEqual(
           left(new Error('Invalid type: {"type":"first invalid type"}'))
@@ -659,12 +659,12 @@ describe("getType", () => {
         getType(optionsTypeScript)({
           oneOf: [
             {
-              $ref: "#/components/schemas/PostCartItem"
+              $ref: "#/components/schemas/PostCartItem",
             },
             {
-              $ref: "#/components/schemas/PostCart"
-            }
-          ]
+              $ref: "#/components/schemas/PostCart",
+            },
+          ],
         })
       ).toEqual(right("PostCartItem|PostCart"));
     });
@@ -675,13 +675,13 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             oneOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
-              }
+                $ref: "#/components/schemas/PostCartItem",
+              },
             ],
             type: "object",
             properties: {
-              itemUuid: { type: "string" }
-            }
+              itemUuid: { type: "string" },
+            },
           } as any)
         ).toEqual(right('PostCartItem|{"itemUuid"?:string}'));
       });
@@ -693,28 +693,28 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             oneOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: true
+            nullable: true,
           })
         ).toEqual(right("(PostCartItem|(PostCart|null)|null)"));
         expect(
           getType(optionsTypeScript)({
             oneOf: [
               {
-                $ref: "#/components/schemas/PostCartItem"
+                $ref: "#/components/schemas/PostCartItem",
               },
               {
                 $ref: "#/components/schemas/PostCart",
-                nullable: true
-              }
+                nullable: true,
+              },
             ],
-            nullable: false
+            nullable: false,
           })
         ).toEqual(right("PostCartItem|(PostCart|null)"));
       });
@@ -726,8 +726,8 @@ describe("getType", () => {
           getType(optionsTypeScript)({
             oneOf: [
               { type: "first invalid type" } as never,
-              { type: "second invalid type" } as never
-            ]
+              { type: "second invalid type" } as never,
+            ],
           })
         ).toEqual(
           left(new Error('Invalid type: {"type":"first invalid type"}'))
@@ -747,12 +747,12 @@ describe("getType", () => {
                 type: "object",
                 properties: {
                   age: { type: "number" },
-                  address: { type: "string" }
-                }
+                  address: { type: "string" },
+                },
               },
-              1: { type: "string" }
+              1: { type: "string" },
             },
-            type: "object"
+            type: "object",
           })
         ).toEqual(
           right(
@@ -772,12 +772,12 @@ describe("getType", () => {
                 type: "object",
                 properties: {
                   age: { type: "number" },
-                  address: { type: "string" }
-                }
+                  address: { type: "string" },
+                },
               },
-              1: { type: "string" }
+              1: { type: "string" },
             },
-            type: "object"
+            type: "object",
           })
         ).toEqual(
           right(
@@ -797,12 +797,12 @@ describe("getType", () => {
                 type: "object",
                 properties: {
                   age: { type: "number" },
-                  address: { type: "string" }
-                }
-              }
+                  address: { type: "string" },
+                },
+              },
             },
             type: "object",
-            nullable: true
+            nullable: true,
           })
         ).toEqual(
           right(
@@ -823,13 +823,13 @@ describe("getType", () => {
                 type: "object",
                 properties: {
                   age: { type: "number" },
-                  address: { type: "string" }
+                  address: { type: "string" },
                 },
-                required: ["age"]
-              }
+                required: ["age"],
+              },
             },
             type: "object",
-            required: ["names", "data"]
+            required: ["names", "data"],
           })
         ).toEqual(
           right(
@@ -854,9 +854,9 @@ describe("getType", () => {
             properties: {
               code: { type: "string" },
               message: { type: "first invalid type" as never },
-              data: { type: "second invalid type" as never }
+              data: { type: "second invalid type" as never },
             },
-            type: "object"
+            type: "object",
           })
         ).toEqual(
           left(new Error('Invalid type: {"type":"first invalid type"}'))
@@ -883,9 +883,9 @@ describe("getType", () => {
           expect(
             getType({
               ...optionsTypeScript,
-              exitOnInvalidType: false
+              exitOnInvalidType: false,
             })({
-              type: "invalid"
+              type: "invalid",
             } as never)
           ).toEqual(right("unknown"));
         });
@@ -895,7 +895,7 @@ describe("getType", () => {
         test("it returns 'mixed'", () => {
           expect(
             getType({ ...optionsFlow, exitOnInvalidType: false })({
-              type: "invalid"
+              type: "invalid",
             } as never)
           ).toEqual(right("mixed"));
         });
@@ -908,7 +908,6 @@ describe("generate", () => {
   describe("when the swagger is valid", () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const swagger = require("./__mocks__/openapi.json");
-
     test("it matches the snapshot", () => {
       expect(
         generate({ ...optionsTypeScript, exitOnInvalidType: false })(swagger)
@@ -917,9 +916,11 @@ describe("generate", () => {
       expect(
         generate({ ...optionsFlow, exitOnInvalidType: false })(swagger)
       ).toMatchSnapshot();
-
       expect(
-        generate({ ...optionsCodecIoTs, exitOnInvalidType: false })(swagger)
+        generate({
+          ...optionsCodecIoTs,
+          exitOnInvalidType: false,
+        })(swagger)
       ).toMatchSnapshot();
     });
   });
@@ -944,13 +945,13 @@ describe("generate", () => {
                   code: {
                     description: "Error code",
                     type: "string",
-                    example: "1401"
-                  }
+                    example: "1401",
+                  },
                 },
-                type: "object"
-              }
-            }
-          }
+                type: "object",
+              },
+            },
+          },
         })
       ).toEqual(
         right('"use strict";\nexport type ExceptionResponse={"code"?:string}')
@@ -962,7 +963,7 @@ describe("generate", () => {
     test("it returns the error", () => {
       expect(
         generate({ ...baseOptions, exitOnInvalidType: false })({
-          openapi: "3.0.0"
+          openapi: "3.0.0",
         })
       ).toEqual(left(new Error("There is no definition")));
     });

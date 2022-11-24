@@ -15,7 +15,7 @@ import {
   isInteger,
   isObject,
   isNumber,
-  isBoolean
+  isBoolean,
 } from "./type-guards";
 import { isString } from "./type-guards";
 import { AllOfProperty } from "./models/SchemaObject";
@@ -32,7 +32,7 @@ function getGenerator({ type }: Options): Generator<unknown> {
   return {
     TypeScript: typeScriptGenerator,
     Flow: flowGenerator,
-    CodecIoTs: codecGenerator
+    CodecIoTs: codecGenerator,
   }[type] as Generator<unknown>;
 }
 
@@ -67,28 +67,28 @@ function fixErrorsOnProperty(property: Property): Property {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { allOf, ...otherProperties } = property as any;
     return {
-      allOf: [...allOf, { ...otherProperties } as Property]
+      allOf: [...allOf, { ...otherProperties } as Property],
     };
   }
   if ("oneOf" in property && "type" in property) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { oneOf, ...otherProperties } = property as any;
     return {
-      oneOf: [...oneOf, { ...otherProperties } as Property]
+      oneOf: [...oneOf, { ...otherProperties } as Property],
     };
   }
   if ("anyOf" in property && "type" in property) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { anyOf, ...otherProperties } = property as any;
     return {
-      anyOf: [...anyOf, { ...otherProperties } as Property]
+      anyOf: [...anyOf, { ...otherProperties } as Property],
     };
   }
   return property;
 }
 
 function getInvalidType(options: Options) {
-  return function(property: Property): TypeResult {
+  return function (property: Property): TypeResult {
     return options.exitOnInvalidType
       ? E.left(new Error(`Invalid type: ${JSON.stringify(property)}`))
       : E.right(getGenerator(options).getTypeUnknown());
@@ -99,8 +99,8 @@ function getPropertyHandler<T extends Property>(
   isT: (property: Property) => property is T,
   handleT: (options: Options) => (property: T) => TypeResult
 ) {
-  return function(options: Options) {
-    return function(property: Property): E.Either<TypeResult, Property> {
+  return function (options: Options) {
+    return function (property: Property): E.Either<TypeResult, Property> {
       return isT(property)
         ? E.left(handleT(options)(property))
         : E.right(property);
@@ -111,92 +111,113 @@ function getPropertyHandler<T extends Property>(
 function isValidAllOf(property: Property): property is AllOfProperty {
   return (
     isAllOf(property) &&
-    property.allOf.every(subprop => isReference(subprop) || isObject(subprop))
+    property.allOf.every((subprop) => isReference(subprop) || isObject(subprop))
   );
 }
 
 const getTypeRef = getPropertyHandler(
   isReference,
-  options => (property): TypeResult =>
-    E.right(getReferenceName(options)(property.$ref))
+  (options) =>
+    (property): TypeResult =>
+      E.right(getReferenceName(options)(property.$ref))
 );
 
 const getTypeAllOf = getPropertyHandler(
   isValidAllOf,
-  options => (property): TypeResult =>
-    pipe(
-      traverseArray(property.allOf, getType(options)),
-      E.map(getGenerator(options).getTypeAllOf)
-    )
+  (options) =>
+    (property): TypeResult =>
+      pipe(
+        traverseArray(property.allOf, getType(options)),
+        E.map(getGenerator(options).getTypeAllOf)
+      )
 );
 const getTypeOneOf = getPropertyHandler(
   isOneOf,
-  options => (property): TypeResult =>
-    pipe(
-      traverseArray(property.oneOf, getType(options)),
-      E.map(getGenerator(options).getTypeOneOf)
-    )
+  (options) =>
+    (property): TypeResult =>
+      pipe(
+        traverseArray(property.oneOf, getType(options)),
+        E.map(getGenerator(options).getTypeOneOf)
+      )
 );
 const getTypeAnyOf = getPropertyHandler(
   isAnyOf,
-  options => (property): TypeResult =>
-    pipe(
-      traverseArray(property.anyOf, getType(options)),
-      E.map(getGenerator(options).getTypeAnyOf)
-    )
+  (options) =>
+    (property): TypeResult =>
+      pipe(
+        traverseArray(property.anyOf, getType(options)),
+        E.map(getGenerator(options).getTypeAnyOf)
+      )
 );
 const getTypeArray = getPropertyHandler(
   isArray,
-  options => (property): TypeResult =>
-    pipe(
-      property.items,
-      getType(options),
-      E.map(getGenerator(options).getTypeArray)
-    )
+  (options) =>
+    (property): TypeResult => {
+      // wrap with array length if have min/max length
+      const { items, ...rest } = property;
+
+      return pipe(
+        items,
+        getType(options),
+        E.map((itemType: string) =>
+          getGenerator(options).getTypeArray(itemType, rest)
+        )
+      );
+    }
 );
 const getTypeEnum = getPropertyHandler(
   isEnum,
-  options => (property): TypeResult =>
-    E.right(getGenerator(options).getTypeEnum(property.enum))
+  (options) =>
+    (property): TypeResult =>
+      E.right(getGenerator(options).getTypeEnum(property.enum))
 );
 const getTypeInteger = getPropertyHandler(
   isInteger,
-  options => (): TypeResult => E.right(getGenerator(options).getTypeInteger())
+  (options) =>
+    (itemTyp): TypeResult =>
+      E.right(getGenerator(options).getTypeInteger(itemTyp))
 );
-const getTypeNumber = getPropertyHandler(isNumber, options => (): TypeResult =>
-  E.right(getGenerator(options).getTypeNumber())
+const getTypeNumber = getPropertyHandler(
+  isNumber,
+  (options) =>
+    (itemTyp): TypeResult =>
+      E.right(getGenerator(options).getTypeNumber(itemTyp))
 );
-const getTypeString = getPropertyHandler(isString, options => (): TypeResult =>
-  E.right(getGenerator(options).getTypeString())
+const getTypeString = getPropertyHandler(
+  isString,
+  (options) =>
+    (itemType): TypeResult =>
+      E.right(getGenerator(options).getTypeString(itemType))
 );
 const getTypeBoolean = getPropertyHandler(
   isBoolean,
-  options => (): TypeResult => E.right(getGenerator(options).getTypeBoolean())
+  (options) => (): TypeResult => E.right(getGenerator(options).getTypeBoolean())
 );
 const getTypeObject = getPropertyHandler(
   isObject,
-  options => (property): TypeResult =>
-    pipe(
-      traverseArray(
-        Object.entries(property.properties || {}),
-        ([key, childProperty]) =>
-          pipe(
-            childProperty,
-            getType(options),
-            E.map(
-              getGenerator(options).getProperty(
-                key,
-                isRequired(key, property.required)
+  (options) =>
+    (property): TypeResult =>
+      pipe(
+        traverseArray(
+          Object.entries(property.properties || {}),
+          ([key, childProperty]) =>
+            pipe(
+              childProperty,
+              getType(options),
+              E.map(
+                getGenerator(options).getProperty(
+                  key,
+                  isRequired(key, property.required)
+                )
               )
             )
-          )
-      ),
-      E.map(getGenerator(options).getTypeObject)
-    )
+        ),
+        E.map(getGenerator(options).getTypeObject)
+      )
 );
 
 function getType(options: Options) {
-  return function(property: Property): TypeResult {
+  return function (property: Property): TypeResult {
     return pipe(
       property,
       fixErrorsOnProperty,
@@ -228,7 +249,7 @@ function checkOpenApiVersion(swagger: Swagger): E.Either<Error, Swagger> {
 }
 
 function getTypesFromSchemas(options: Options) {
-  return function(schemas: {
+  return function (schemas: {
     [key: string]: Property;
   }): E.Either<Error, string[]> {
     return traverseArray(Object.entries(schemas), ([key, property]) =>
@@ -239,11 +260,11 @@ function getTypesFromSchemas(options: Options) {
   };
 }
 
-const eitherPrefix = (b: E.Either<Error, string>) => (
-  c: E.Either<Error, string>
-): E.Either<Error, string> => {
-  return E.ap(c)(E.map(prefix)(b));
-};
+const eitherPrefix =
+  (b: E.Either<Error, string>) =>
+  (c: E.Either<Error, string>): E.Either<Error, string> => {
+    return E.ap(c)(E.map(prefix)(b));
+  };
 
 function baseDefinitionsToString(
   options: Options

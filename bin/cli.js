@@ -44,21 +44,24 @@ function parseArgumentsIntoOptions(rawArgs) {
         "--destination": String,
         "--source": String,
         "--type": String,
+        "--parser": String,
         "--exitOnInvalidType": Boolean,
         "--patchSource": String,
         "-d": "--destination",
         "-s": "--source",
         "-t": "--type",
-        "-e": "--exitOnInvalidType"
+        "-p": "--parser",
+        "-e": "--exitOnInvalidType",
     }, {
-        argv: rawArgs.slice(2)
+        argv: rawArgs.slice(2),
     });
     return {
         destination: args["--destination"],
         source: args["--source"],
         exitOnInvalidType: args["--exitOnInvalidType"] || false,
         type: args["--type"],
-        patchSource: args["--patchSource"]
+        parser: args["--parser"],
+        patchSource: args["--patchSource"],
     };
 }
 function getQuestions(options) {
@@ -67,14 +70,14 @@ function getQuestions(options) {
         questions.push({
             type: "string",
             name: "source",
-            message: "Swagger's url or path"
+            message: "Swagger's url or path",
         });
     }
     if (!options.destination) {
         questions.push({
             type: "string",
             name: "destination",
-            message: "Name of the file"
+            message: "Name of the file",
         });
     }
     if (!options.type) {
@@ -83,7 +86,16 @@ function getQuestions(options) {
             name: "type",
             message: "Types to generate",
             choices: ["TypeScript", "Flow"],
-            default: "TypeScript"
+            default: "TypeScript",
+        });
+    }
+    if (!options.parser) {
+        questions.push({
+            type: "list",
+            name: "parser",
+            message: "Parser format",
+            choices: ["typescript", "babel", "flow", "babel-flow"],
+            default: "typescript",
         });
     }
     return questions;
@@ -97,6 +109,9 @@ function checkOptions(answers) {
     }
     if (!answers.type) {
         return E.left(new Error("Type is missing"));
+    }
+    if (!answers.parser) {
+        return E.left(new Error("Parser is missing"));
     }
     return E.right(answers);
 }

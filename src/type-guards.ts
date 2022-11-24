@@ -8,7 +8,7 @@ import {
   NumberProperty,
   BooleanProperty,
   EnumProperty,
-  ObjectProperty
+  ObjectProperty,
 } from "./models/SchemaObject";
 import { ReferenceObject } from "./models/ReferenceObject";
 

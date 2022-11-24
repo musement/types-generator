@@ -32,7 +32,7 @@ exports.doIf = doIf;
 function patch(swagger) {
     return function (toApply) {
         return deepmerge_1.default(swagger, { components: { schemas: __assign({}, toApply) } }, {
-            arrayMerge: function (destination, source) { return source; }
+            arrayMerge: function (destination, source) { return source; },
         });
     };
 }

@@ -9,17 +9,17 @@ describe("patch", () => {
           openapi: "3.0.0",
           components: {
             schemas: {
-              PostActivity: { type: "object" }
-            }
-          }
+              PostActivity: { type: "object" },
+            },
+          },
         })({ PostActivity: { type: "string" } })
       ).toEqual({
         openapi: "3.0.0",
         components: {
           schemas: {
-            PostActivity: { type: "string" }
-          }
-        }
+            PostActivity: { type: "string" },
+          },
+        },
       });
     });
   });
@@ -31,18 +31,18 @@ describe("patch", () => {
           openapi: "3.0.0",
           components: {
             schemas: {
-              PostActivity: { type: "object" }
-            }
-          }
+              PostActivity: { type: "object" },
+            },
+          },
         })({ NewProperty: { type: "string" } })
       ).toEqual({
         openapi: "3.0.0",
         components: {
           schemas: {
             PostActivity: { type: "object" },
-            NewProperty: { type: "string" }
-          }
-        }
+            NewProperty: { type: "string" },
+          },
+        },
       });
     });
   });
@@ -57,12 +57,12 @@ describe("patch", () => {
               PostActivity: {
                 required: ["vertical"],
                 properties: {
-                  vertical: { type: "string" }
+                  vertical: { type: "string" },
                 },
-                type: "object"
-              }
-            }
-          }
+                type: "object",
+              },
+            },
+          },
         })({ PostActivity: { required: [] } })
       ).toEqual({
         openapi: "3.0.0",
@@ -71,12 +71,12 @@ describe("patch", () => {
             PostActivity: {
               required: [],
               properties: {
-                vertical: { type: "string" }
+                vertical: { type: "string" },
               },
-              type: "object"
-            }
-          }
-        }
+              type: "object",
+            },
+          },
+        },
       });
     });
   });
@@ -94,25 +94,25 @@ describe("patch", () => {
                   payment: {
                     properties: {
                       order_uuid: { type: "string" },
-                      client_ip: { type: "string" }
+                      client_ip: { type: "string" },
                     },
-                    type: "object"
-                  }
+                    type: "object",
+                  },
                 },
-                type: "object"
-              }
-            }
-          }
+                type: "object",
+              },
+            },
+          },
         })({
           PostActivity: {
             properties: {
               payment: {
                 properties: {
-                  order_uuid: { type: "object" }
-                }
-              }
-            }
-          }
+                  order_uuid: { type: "object" },
+                },
+              },
+            },
+          },
         })
       ).toEqual({
         openapi: "3.0.0",
@@ -124,15 +124,15 @@ describe("patch", () => {
                 payment: {
                   properties: {
                     order_uuid: { type: "object" },
-                    client_ip: { type: "string" }
+                    client_ip: { type: "string" },
                   },
-                  type: "object"
-                }
+                  type: "object",
+                },
               },
-              type: "object"
-            }
-          }
-        }
+              type: "object",
+            },
+          },
+        },
       });
     });
   });

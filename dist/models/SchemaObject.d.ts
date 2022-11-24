@@ -1,6 +1,10 @@
 import { ReferenceObject } from "./ReferenceObject";
 export interface StringProperty {
     type: "string";
+    minLength?: number;
+    maxLength?: number;
+    format?: string;
+    pattern?: string;
     default?: string;
 }
 export interface EnumProperty {
@@ -10,10 +14,14 @@ export interface EnumProperty {
 }
 export interface IntegerProperty {
     type: "integer";
+    minimum?: number;
+    maximum?: number;
     default?: number;
 }
 export interface NumberProperty {
     type: "number";
+    minimum?: number;
+    maximum?: number;
     default?: number;
 }
 export interface BooleanProperty {
@@ -23,6 +31,8 @@ export interface BooleanProperty {
 export interface ArrayProperty {
     type: "array";
     items: SchemaObject | ReferenceObject;
+    minItems?: number;
+    maxItems?: number;
 }
 export interface ObjectProperty {
     type: "object";

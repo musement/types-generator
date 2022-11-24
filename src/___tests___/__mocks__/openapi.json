@@ -13155,10 +13155,13 @@
                 "properties": {
                     "name": {
                         "type": "string",
-                        "example": "firstname"
+                        "example": "firstname",
+                        "pattern": "[A-Z]\\w+"
                     },
                     "value": {
                         "type": "string",
+                        "pattern": "[A-Z]\\w+",
+                        "minLength": 4,
                         "example": "Linus"
                     }
                 },
@@ -13196,7 +13199,9 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/FormFieldError"
-                        }
+                        },
+                        "maxItems": 2,
+                        "minItems": 0
                     }
                 },
                 "type": "object"

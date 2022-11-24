@@ -64,7 +64,7 @@ function getGenerator(_a) {
     return {
         TypeScript: typescriptGenerator_1.typeScriptGenerator,
         Flow: flowGenerator_1.flowGenerator,
-        CodecIoTs: codecGenerator_1.codecGenerator
+        CodecIoTs: codecGenerator_1.codecGenerator,
     }[type];
 }
 function getDefinitions(swagger) {
@@ -87,21 +87,21 @@ function fixErrorsOnProperty(property) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var _a = property, allOf = _a.allOf, otherProperties = __rest(_a, ["allOf"]);
         return {
-            allOf: __spreadArrays(allOf, [__assign({}, otherProperties)])
+            allOf: __spreadArrays(allOf, [__assign({}, otherProperties)]),
         };
     }
     if ("oneOf" in property && "type" in property) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var _b = property, oneOf = _b.oneOf, otherProperties = __rest(_b, ["oneOf"]);
         return {
-            oneOf: __spreadArrays(oneOf, [__assign({}, otherProperties)])
+            oneOf: __spreadArrays(oneOf, [__assign({}, otherProperties)]),
         };
     }
     if ("anyOf" in property && "type" in property) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         var _c = property, anyOf = _c.anyOf, otherProperties = __rest(_c, ["anyOf"]);
         return {
-            anyOf: __spreadArrays(anyOf, [__assign({}, otherProperties)])
+            anyOf: __spreadArrays(anyOf, [__assign({}, otherProperties)]),
         };
     }
     return property;
@@ -126,38 +126,64 @@ function isValidAllOf(property) {
     return (type_guards_1.isAllOf(property) &&
         property.allOf.every(function (subprop) { return type_guards_1.isReference(subprop) || type_guards_1.isObject(subprop); }));
 }
-var getTypeRef = getPropertyHandler(type_guards_1.isReference, function (options) { return function (property) {
-    return E.right(getReferenceName(options)(property.$ref));
-}; });
-var getTypeAllOf = getPropertyHandler(isValidAllOf, function (options) { return function (property) {
-    return function_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
-}; });
-var getTypeOneOf = getPropertyHandler(type_guards_1.isOneOf, function (options) { return function (property) {
-    return function_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
-}; });
-var getTypeAnyOf = getPropertyHandler(type_guards_1.isAnyOf, function (options) { return function (property) {
-    return function_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
-}; });
-var getTypeArray = getPropertyHandler(type_guards_1.isArray, function (options) { return function (property) {
-    return function_1.pipe(property.items, getType(options), E.map(getGenerator(options).getTypeArray));
-}; });
-var getTypeEnum = getPropertyHandler(type_guards_1.isEnum, function (options) { return function (property) {
-    return E.right(getGenerator(options).getTypeEnum(property.enum));
-}; });
-var getTypeInteger = getPropertyHandler(type_guards_1.isInteger, function (options) { return function () { return E.right(getGenerator(options).getTypeInteger()); }; });
-var getTypeNumber = getPropertyHandler(type_guards_1.isNumber, function (options) { return function () {
-    return E.right(getGenerator(options).getTypeNumber());
-}; });
-var getTypeString = getPropertyHandler(type_guards_2.isString, function (options) { return function () {
-    return E.right(getGenerator(options).getTypeString());
-}; });
+var getTypeRef = getPropertyHandler(type_guards_1.isReference, function (options) {
+    return function (property) {
+        return E.right(getReferenceName(options)(property.$ref));
+    };
+});
+var getTypeAllOf = getPropertyHandler(isValidAllOf, function (options) {
+    return function (property) {
+        return function_1.pipe(traverseArray(property.allOf, getType(options)), E.map(getGenerator(options).getTypeAllOf));
+    };
+});
+var getTypeOneOf = getPropertyHandler(type_guards_1.isOneOf, function (options) {
+    return function (property) {
+        return function_1.pipe(traverseArray(property.oneOf, getType(options)), E.map(getGenerator(options).getTypeOneOf));
+    };
+});
+var getTypeAnyOf = getPropertyHandler(type_guards_1.isAnyOf, function (options) {
+    return function (property) {
+        return function_1.pipe(traverseArray(property.anyOf, getType(options)), E.map(getGenerator(options).getTypeAnyOf));
+    };
+});
+var getTypeArray = getPropertyHandler(type_guards_1.isArray, function (options) {
+    return function (property) {
+        // wrap with array length if have min/max length
+        var items = property.items, rest = __rest(property, ["items"]);
+        return function_1.pipe(items, getType(options), E.map(function (itemType) {
+            return getGenerator(options).getTypeArray(itemType, rest);
+        }));
+    };
+});
+var getTypeEnum = getPropertyHandler(type_guards_1.isEnum, function (options) {
+    return function (property) {
+        return E.right(getGenerator(options).getTypeEnum(property.enum));
+    };
+});
+var getTypeInteger = getPropertyHandler(type_guards_1.isInteger, function (options) {
+    return function (itemTyp) {
+        return E.right(getGenerator(options).getTypeInteger(itemTyp));
+    };
+});
+var getTypeNumber = getPropertyHandler(type_guards_1.isNumber, function (options) {
+    return function (itemTyp) {
+        return E.right(getGenerator(options).getTypeNumber(itemTyp));
+    };
+});
+var getTypeString = getPropertyHandler(type_guards_2.isString, function (options) {
+    return function (itemType) {
+        return E.right(getGenerator(options).getTypeString(itemType));
+    };
+});
 var getTypeBoolean = getPropertyHandler(type_guards_1.isBoolean, function (options) { return function () { return E.right(getGenerator(options).getTypeBoolean()); }; });
-var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) { return function (property) {
-    return function_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
-        var key = _a[0], childProperty = _a[1];
-        return function_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
-    }), E.map(getGenerator(options).getTypeObject));
-}; });
+var getTypeObject = getPropertyHandler(type_guards_1.isObject, function (options) {
+    return function (property) {
+        return function_1.pipe(traverseArray(Object.entries(property.properties || {}), function (_a) {
+            var key = _a[0], childProperty = _a[1];
+            return function_1.pipe(childProperty, getType(options), E.map(getGenerator(options).getProperty(key, isRequired(key, property.required))));
+        }), E.map(getGenerator(options).getTypeObject));
+    };
+});
 function getType(options) {
     return function (property) {
         return function_1.pipe(property, fixErrorsOnProperty, function_1.flow(getTypeRef(options), E.chain(getTypeAllOf(options)), E.chain(getTypeAnyOf(options)), E.chain(getTypeOneOf(options)), E.chain(getTypeArray(options)), E.chain(getTypeObject(options)), function_1.flow(E.chain(getTypeEnum(options)), E.chain(getTypeNumber(options)), E.chain(getTypeString(options)), E.chain(getTypeBoolean(options)), E.chain(getTypeInteger(options)))), E.fold(function_1.identity, getInvalidType(options)), E.map(utils_1.doIf(isNullable(property), getGenerator(options).makeTypeNullable)));
@@ -177,9 +203,11 @@ function getTypesFromSchemas(options) {
         });
     };
 }
-var eitherPrefix = function (b) { return function (c) {
-    return E.ap(c)(E.map(utils_1.prefix)(b));
-}; };
+var eitherPrefix = function (b) {
+    return function (c) {
+        return E.ap(c)(E.map(utils_1.prefix)(b));
+    };
+};
 function baseDefinitionsToString(options) {
     return function_1.flow(getTypesFromSchemas(options), E.map(getGenerator(options).combineTypes));
 }

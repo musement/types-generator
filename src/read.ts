@@ -21,7 +21,7 @@ function getContentFromURL<T>(url: string): TE.TaskEither<Error, T> {
       axios({ method: "get", url }).then(({ data }) =>
         typeof data === "object" ? data : yaml.safeLoad(data)
       ),
-    error => error as Error
+    (error) => error as Error
   );
 }
 
@@ -32,11 +32,11 @@ function getContentFromPath<T>(file: string): IE.IOEither<Error, T> {
       const content = fs.readFileSync(file, "utf8");
       const swagger =
         ext === ".yaml" || ext === ".yml"
-          ? ((yaml.safeLoad(content) as unknown) as T)
+          ? (yaml.safeLoad(content) as unknown as T)
           : (JSON.parse(content) as T);
       return swagger;
     },
-    error => error as Error
+    (error) => error as Error
   );
 }
 
@@ -45,27 +45,27 @@ function getContent<T>(source: string): TE.TaskEither<Error, T> {
     source,
     doIfElse(
       isUrl,
-      source => getContentFromURL<T>(source),
-      source => TE.fromIOEither(getContentFromPath<T>(source))
+      (source) => getContentFromURL<T>(source),
+      (source) => TE.fromIOEither(getContentFromPath<T>(source))
     )
   );
 }
 
 function patchSwagger(patchSource: E.Either<string, Partial<Schemas>>) {
-  return function(swagger: Swagger): TE.TaskEither<Error, Swagger> {
+  return function (swagger: Swagger): TE.TaskEither<Error, Swagger> {
     return pipe(
       patchSource,
-      E.fold(source => getContent<Partial<Swagger>>(source), TE.right),
+      E.fold((source) => getContent<Partial<Swagger>>(source), TE.right),
       TE.map(patch(swagger))
     );
   };
 }
 
 export function getSwagger(patchSource?: E.Either<string, Partial<Schemas>>) {
-  return function(source: string): TE.TaskEither<Error, Swagger> {
+  return function (source: string): TE.TaskEither<Error, Swagger> {
     return pipe(
       source,
-      source => getContent<Swagger>(source),
+      (source) => getContent<Swagger>(source),
       doIf(constant(patchSource != null), TE.chain(patchSwagger(patchSource!)))
     );
   };

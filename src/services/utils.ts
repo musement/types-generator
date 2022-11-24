@@ -7,7 +7,7 @@ export function doIfElse<T, V>(
   doIfTrue: (value: V) => T,
   doIfFalse: (value: V) => T
 ) {
-  return function(value: V): T {
+  return function (value: V): T {
     return checkValue(value) ? doIfTrue(value) : doIfFalse(value);
   };
 }
@@ -16,55 +16,55 @@ export function doIf<T>(
   checkValue: (value: T) => boolean,
   doIfTrue: (value: T) => T
 ): (value: T) => T {
-  return function(value: T): T {
+  return function (value: T): T {
     return checkValue(value) ? doIfTrue(value) : value;
   };
 }
 
 export function patch(swagger: Swagger) {
-  return function(toApply: {}): Swagger {
+  return function (toApply: {}): Swagger {
     return merge(
       swagger,
       { components: { schemas: { ...toApply } } },
       {
-        arrayMerge: (destination, source) => source
+        arrayMerge: (destination, source) => source,
       }
     );
   };
 }
 
 export function join(separator: string) {
-  return function(array: string[]): string {
+  return function (array: string[]): string {
     return array.join(separator);
   };
 }
 
 export function reduce<T, K>(fn: (reduced: K, item: T) => K, initialValue: K) {
-  return function(array: T[]): K {
+  return function (array: T[]): K {
     return array.reduce(fn, initialValue);
   };
 }
 
 export function map<T>(fn: (item: string, index: number) => T) {
-  return function(array: string[]): T[] {
+  return function (array: string[]): T[] {
     return array.map(fn);
   };
 }
 
 export function split(separator: string) {
-  return function(value: string): string[] {
+  return function (value: string): string[] {
     return value.split(separator);
   };
 }
 
 export function prefix(start: string) {
-  return function(value: string): string {
+  return function (value: string): string {
     return start + value;
   };
 }
 
 export function suffix(end: string) {
-  return function(value: string): string {
+  return function (value: string): string {
     return value + end;
   };
 }
@@ -77,13 +77,13 @@ export function surround(
 }
 
 export function replace(searchValue: string, replaceValue: string) {
-  return function(value: string): string {
+  return function (value: string): string {
     return value.replace(searchValue, replaceValue);
   };
 }
 
 export const toPascalCase = flow(
   (s: string) => s.match(/[a-zA-Z0-9]+/g) || [],
-  map(token => token[0].toUpperCase() + token.slice(1)),
+  map((token) => token[0].toUpperCase() + token.slice(1)),
   join("")
 );

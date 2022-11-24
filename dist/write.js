@@ -27,15 +27,15 @@ var fs_1 = __importDefault(require("fs"));
 var prettier_1 = __importDefault(require("prettier"));
 var TE = __importStar(require("fp-ts/lib/TaskEither"));
 var function_1 = require("fp-ts/lib/function");
-function prettify(types) {
-    return prettier_1.default.format(types);
+function prettify(types, parser) {
+    return prettier_1.default.format(types, { parser: parser });
 }
 function writeToFile(filename) {
     return function (types) {
         return TE.taskify(fs_1.default.writeFile)(filename, types);
     };
 }
-function write(filename) {
-    return function_1.flow(prettify, writeToFile(filename));
+function write(filename, parser) {
+    return function_1.flow(function (types) { return prettify(types, parser); }, writeToFile(filename));
 }
 exports.write = write;

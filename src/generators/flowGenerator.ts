@@ -8,15 +8,20 @@ import {
   prefix,
   suffix,
   surround,
-  toPascalCase
+  toPascalCase,
 } from "../services/utils";
-
+const safeSurroundEnum = (item: string): string => {
+  if (item.indexOf("'") !== -1) {
+    return surround('"', '"')(item);
+  }
+  return surround("'", "'")(item);
+};
 export const flowGenerator: Generator = {
   getTypeString: () => "string",
   getTypeNumber: () => "number",
   getTypeInteger: () => "number",
   getTypeBoolean: () => "boolean",
-  getTypeEnum: flow(map(surround("'", "'")), join("|")),
+  getTypeEnum: flow(map(safeSurroundEnum), join("|")),
   getTypeArray: surround("Array<", ">"),
   getTypeAnyOf: join("|"),
   getTypeOneOf: join("|"),
@@ -34,6 +39,6 @@ export const flowGenerator: Generator = {
   getTypeUnknown: constant("mixed"),
   addHeader: prefix("// @flow strict\n"),
   combineTypes: join(";"),
-  getTypeDefinition: key => prefix(`export type ${toPascalCase(key)}=`),
-  makeTypeNullable: flow(suffix("|null"), surround("(", ")"))
+  getTypeDefinition: (key) => prefix(`export type ${toPascalCase(key)}=`),
+  makeTypeNullable: flow(suffix("|null"), surround("(", ")")),
 };

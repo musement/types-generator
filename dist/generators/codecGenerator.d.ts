@@ -1,4 +1,4 @@
-import { Generator } from "../models/Generator";
+import { Generator } from '../models/Generator';
 declare type PropertyModel = {
     isRequired: boolean;
     property: string;
